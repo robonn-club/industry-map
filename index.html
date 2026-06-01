@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Germany Industry Map — Robonn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ── Welcome overlay ────────────────────────────────────────────────── -->
+  <div id="welcome-overlay">
+    <div id="welcome-card">
+      <div id="welcome-brand">
+        <img src="assets/robonn_logo.png" alt="Robonn" id="welcome-logo" />
+        <div>
+          <div id="welcome-title"> Industry Map</div>
+          <div id="welcome-sub">by Robonn </div>
+        </div>
+      </div>
+
+      <p id="welcome-desc">
+        An open map of Germany's robotics, tech, and industrial companies and
+        research labs.
+      </p>
+
+      <div id="welcome-tips">
+        <div class="wtip">
+          <span class="wtip-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <circle cx="10" cy="10" r="5"/><circle cx="10" cy="10" r="1.5" fill="currentColor" stroke="none"/>
+            </svg>
+          </span>
+          <span><strong>Click a point</strong> — details &amp; website</span>
+        </div>
+        <div class="wtip">
+          <span class="wtip-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <path d="M10 2C7 2 4 4.5 4 8c0 5 6 10 6 10s6-5 6-10c0-3.5-3-6-6-6z"/><circle cx="10" cy="8" r="2"/>
+            </svg>
+          </span>
+          <span><strong>Click a state</strong> — its sector breakdown</span>
+        </div>
+        <div class="wtip">
+          <span class="wtip-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 4h14l-5.5 6.5V16l-3 2v-7.5L3 4z"/>
+            </svg>
+          </span>
+          <span><strong>Filter</strong> — by sector, Near Bonn, or the Sector Grid</span>
+        </div>
+      </div>
+
+      <button id="welcome-cta">Explore the map &rarr;</button>
+
+      <label id="welcome-noshow">
+        <input type="checkbox" id="welcome-skip" /> Don't show this again
+      </label>
+    </div>
+  </div>
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header id="header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <img src="assets/robonn_logo.png" alt="Robonn" class="brand-icon" />
+        <div class="brand-text">
+          <h1>Industry Map</h1>
+          <span>Robotics &amp; Tech Companies</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="header-stats">
+          <div class="stat-box">
+            <span id="count-visible" class="stat-num">—</span>
+            <span class="stat-lbl">visible</span>
+          </div>
+          <div class="stat-sep">/</div>
+          <div class="stat-box">
+            <span id="count-total" class="stat-num">—</span>
+            <span class="stat-lbl">total</span>
+          </div>
+        </div>
+        <button id="welcome-reopen" title="About this map">?</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Filter bar ──────────────────────────────────────────────────────── -->
+  <nav id="filter-bar">
+    <span class="filter-label">Sector</span>
+    <div id="filter-btns"></div>
+    <div class="filter-sep"></div>
+    <button id="bonn-filter" title="Show companies within 250 km of Bonn">Near Bonn</button>
+  </nav>
+
+  <!-- ── App body ────────────────────────────────────────────────────────── -->
+  <div id="app-body">
+    <div id="map"></div>
+
+    <button id="grid-toggle" title="View companies by sector">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1" y="1" width="6" height="6" rx="1.2"/><rect x="9" y="1" width="6" height="6" rx="1.2"/>
+        <rect x="1" y="9" width="6" height="6" rx="1.2"/><rect x="9" y="9" width="6" height="6" rx="1.2"/>
+      </svg>
+      <span class="btn-text">Sector Grid</span>
+    </button>
+
+    <div id="grid-overlay" class="grid-hidden">
+      <div id="grid-header">
+        <div class="grid-title-group">
+          <span class="grid-title">Companies by Sector</span>
+          <span class="grid-hint">Click any card to filter the map to that sector</span>
+        </div>
+        <button id="grid-close">&#8592; Back to Map</button>
+      </div>
+      <div id="grid-container"></div>
+    </div>
+
+    <aside id="region-panel" class="panel-hidden">
+      <div id="panel-header">
+        <button id="panel-close" title="Close">&times;</button>
+      </div>
+      <div id="panel-content"></div>
+    </aside>
+  </div>
+
+  <!-- ── Legend ─────────────────────────────────────────────────────────── -->
+  <div id="legend">
+    <div class="legend-heading">SECTOR</div>
+    <div id="legend-sectors"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="data/world.js"></script>
+  <script src="data/germany.js"></script>
+  <script src="data/bundeslaender.js"></script>
+  <script src="data/companies.js"></script>
+  <script src="data/institutes.js"></script>
+  <script src="data/regions.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
