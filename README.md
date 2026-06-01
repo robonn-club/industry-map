@@ -1,11 +1,11 @@
 # Germany Industry Map
 
 An interactive map of Germany's robotics, tech, and industrial landscape — built
-by [Robonn](https://github.com/robonn), the robotics club at the University of
-Bonn, to help students see the industry at a glance and find companies and labs
-to connect with.
+by [Robonn](https://github.com/robonn-uni-club), the robotics club at the
+University of Bonn, to help students see the industry at a glance and find
+companies and labs to connect with.
 
-**[▶ Open the live map](https://robonn.github.io/industry-map/)**
+**[▶ Open the live map](https://robonn-uni-club.github.io/industry-map/)**
 
 ## What it shows
 
