@@ -12,8 +12,8 @@
 </head>
 <body>
 
-  <!-- ── Welcome overlay ────────────────────────────────────────────────── -->
-  <div id="welcome-overlay">
+  <!-- ── Welcome overlay (opens only via the ? button) ──────────────────── -->
+  <div id="welcome-overlay" class="welcome-hidden">
     <div id="welcome-card">
       <div id="welcome-brand">
         <img src="assets/robonn_logo.png" alt="Robonn" id="welcome-logo" />
@@ -56,10 +56,6 @@
       </div>
 
       <button id="welcome-cta">Explore the map &rarr;</button>
-
-      <label id="welcome-noshow">
-        <input type="checkbox" id="welcome-skip" /> Don't show this again
-      </label>
     </div>
   </div>
 
@@ -94,27 +90,35 @@
   <!-- ── Filter bar ──────────────────────────────────────────────────────── -->
   <nav id="filter-bar">
     <span class="filter-label">Sector</span>
+    <button id="grid-toggle" title="View companies by sector">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1" y="1" width="6" height="6" rx="1.2"/><rect x="9" y="1" width="6" height="6" rx="1.2"/>
+        <rect x="1" y="9" width="6" height="6" rx="1.2"/><rect x="9" y="9" width="6" height="6" rx="1.2"/>
+      </svg>
+    </button>
     <div id="filter-btns"></div>
     <div class="filter-sep"></div>
-    <button id="bonn-filter" title="Show companies within 250 km of Bonn">Near Bonn</button>
+    <div id="bonn-control">
+      <button id="bonn-filter" title="Filter by distance from Bonn">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 2C7 2 4 4.5 4 8c0 5 6 10 6 10s6-5 6-10c0-3.5-3-6-6-6z"/><circle cx="10" cy="8" r="2"/>
+        </svg>
+      </button>
+      <div id="bonn-popover">
+        <input type="range" id="bonn-range" min="25" max="600" step="25" value="100" aria-label="Distance from Bonn in km" />
+        <span id="bonn-km">100 km</span>
+      </div>
+    </div>
   </nav>
 
   <!-- ── App body ────────────────────────────────────────────────────────── -->
   <div id="app-body">
     <div id="map"></div>
 
-    <button id="grid-toggle" title="View companies by sector">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="1" y="1" width="6" height="6" rx="1.2"/><rect x="9" y="1" width="6" height="6" rx="1.2"/>
-        <rect x="1" y="9" width="6" height="6" rx="1.2"/><rect x="9" y="9" width="6" height="6" rx="1.2"/>
-      </svg>
-      <span class="btn-text">Sector Grid</span>
-    </button>
-
     <div id="grid-overlay" class="grid-hidden">
       <div id="grid-header">
         <div class="grid-title-group">
-          <span class="grid-title">Companies by Sector</span>
+          <span class="grid-title">By Sector</span>
           <span class="grid-hint">Click any card to filter the map to that sector</span>
         </div>
         <button id="grid-close">&#8592; Back to Map</button>

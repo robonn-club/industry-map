@@ -129,4 +129,102 @@ const REGIONS = [
     ],
     connections: ["bw", "nrw", "berlin"]
   },
+  {
+    id: "brandenburg",
+    name: "Brandenburg",
+    capital: "Potsdam",
+    lat: 52.4000, lng: 13.0000,
+    tagline: "Berlin's Industrial Hinterland",
+    overview: "Surrounding Berlin, Brandenburg has become a magnet for large-scale manufacturing and clean energy, anchored by Tesla's first European factory.",
+    strengths: [
+      "Tesla Gigafactory in Grünheide — Europe's largest EV plant",
+      "Fast-growing logistics and rail corridor around Berlin",
+      "Emerging battery and clean-energy industry"
+    ],
+    connections: ["berlin", "saxony", "saxony_anhalt"]
+  },
+  {
+    id: "bremen",
+    name: "Bremen",
+    capital: "Bremen",
+    lat: 53.0800, lng: 8.8000,
+    tagline: "Aerospace, Maritime & Logistics",
+    overview: "Germany's smallest state is a heavyweight in aerospace and shipping, combining a major port complex with one of Europe's densest space and aviation clusters.",
+    strengths: [
+      "Aerospace cluster — Airbus, OHB, and ArianeGroup",
+      "Second-largest German port complex (with Bremerhaven)",
+      "Mercedes-Benz's largest German car plant"
+    ],
+    connections: ["lower_saxony", "hamburg"]
+  },
+  {
+    id: "mv",
+    name: "Mecklenburg-Vorpommern",
+    capital: "Schwerin",
+    lat: 53.6000, lng: 12.7000,
+    tagline: "Maritime Economy & Renewable Energy",
+    overview: "This Baltic coastal state builds its economy on shipbuilding, offshore wind, and a growing biotech and research base in Rostock and Greifswald.",
+    strengths: [
+      "Shipbuilding and maritime industry on the Baltic coast",
+      "A leading region for offshore wind energy",
+      "Biotech and plasma research at Rostock & Greifswald"
+    ],
+    connections: ["hamburg", "schleswig_holstein", "brandenburg"]
+  },
+  {
+    id: "saarland",
+    name: "Saarland",
+    capital: "Saarbrücken",
+    lat: 49.3800, lng: 7.0200,
+    tagline: "Automotive & AI in Transformation",
+    overview: "A small western border state with a dense automotive-supplier base and a steel heritage, now reinventing itself around AI and cybersecurity research.",
+    strengths: [
+      "Dense automotive supplier cluster (Ford, ZF, Bosch)",
+      "CISPA Helmholtz Center for Information Security",
+      "Cross-border industry with France and Luxembourg"
+    ],
+    connections: ["rhineland_palatinate"]
+  },
+  {
+    id: "saxony_anhalt",
+    name: "Saxony-Anhalt",
+    capital: "Magdeburg",
+    lat: 51.9500, lng: 11.6000,
+    tagline: "Chemicals, Semiconductors & Hydrogen",
+    overview: "A central industrial state with vast chemical parks and ambitious plans in semiconductors and green hydrogen.",
+    strengths: [
+      "Planned Intel semiconductor megafab in Magdeburg",
+      "Major chemical parks at Leuna and Bitterfeld-Wolfen",
+      "Leading green-hydrogen and renewable-energy projects"
+    ],
+    connections: ["saxony", "brandenburg", "lower_saxony"]
+  },
+  {
+    id: "schleswig_holstein",
+    name: "Schleswig-Holstein",
+    capital: "Kiel",
+    lat: 54.2000, lng: 9.7000,
+    tagline: "Maritime, Wind & Medical Tech",
+    overview: "Germany's northernmost state sits between two seas, leading in wind energy and shipbuilding while building a strong medical-technology cluster.",
+    strengths: [
+      "German leader in onshore and offshore wind energy",
+      "Shipbuilding and naval industry in Kiel",
+      "Growing medical-technology cluster"
+    ],
+    connections: ["hamburg", "mv", "lower_saxony"]
+  },
+  {
+    id: "thuringia",
+    name: "Thuringia",
+    capital: "Erfurt",
+    lat: 50.9000, lng: 11.0000,
+    tagline: "Optics, Precision & Automotive",
+    overview: "The 'green heart' of Germany is a powerhouse in optics and precision engineering, centred on the historic photonics cluster in Jena.",
+    strengths: [
+      "World-class optics & photonics in Jena (Zeiss, Jenoptik)",
+      "Strong precision-engineering and toolmaking base",
+      "Growing automotive-supplier and battery industry"
+    ],
+    connections: ["saxony", "saxony_anhalt", "hesse", "bavaria"]
+  },
 ];

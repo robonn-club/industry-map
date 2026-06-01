@@ -407,7 +407,7 @@ const COMPANIES = [
     website: "https://www.hensoldt.net"
   },
   {
-    name: "OHB SE", city: "Bremen", state: "lower_saxony",
+    name: "OHB SE", city: "Bremen", state: "bremen",
     lat: 53.0510, lng: 8.8340,
     sector: "defense", size: "big", founded: 1981,
     description: "Space-systems company building satellites, exploration payloads, and launch technology.",
@@ -442,5 +442,215 @@ const COMPANIES = [
     sector: "agriculture", size: "big", founded: 1906,
     description: "Manufacturer of forage-harvesting machinery and commercial trailers for modern agriculture.",
     website: "https://www.krone-agriculture.com"
+  },
+
+  // ── ROBOTICS (batch 2) ────────────────────────────────────────────────────
+  {
+    name: "fruitcore robotics", city: "Konstanz", state: "bw",
+    lat: 47.6779, lng: 9.1732,
+    sector: "robotics", size: "startup", founded: 2017,
+    description: "HORST industrial robot arms making automation affordable for small and mid-sized manufacturers.",
+    website: "https://fruitcore-robotics.com"
+  },
+  {
+    name: "Synapticon", city: "Schönaich", state: "bw",
+    lat: 48.6560, lng: 9.0640,
+    sector: "robotics", size: "startup", founded: 2010,
+    description: "Motion-control and servo-drive technology powering robots and autonomous machines.",
+    website: "https://www.synapticon.com"
+  },
+  {
+    name: "Micropsi Industries", city: "Berlin", state: "berlin",
+    lat: 52.5200, lng: 13.4050,
+    sector: "robotics", size: "startup", founded: 2014,
+    description: "AI vision software (MIRAI) giving industrial robots real-time adaptive control.",
+    website: "https://www.micropsi-industries.com"
+  },
+
+  // ── AUTOMOTIVE (batch 2) ──────────────────────────────────────────────────
+  {
+    name: "Mahle", city: "Stuttgart", state: "bw",
+    lat: 48.7758, lng: 9.1829,
+    sector: "automotive", size: "global", founded: 1920,
+    description: "Automotive supplier of powertrain, thermal management, and e-mobility components.",
+    website: "https://www.mahle.com"
+  },
+  {
+    name: "Webasto", city: "Stockdorf", state: "bavaria",
+    lat: 48.0760, lng: 11.4000,
+    sector: "automotive", size: "global", founded: 1901,
+    description: "Supplier of roof systems, thermal solutions, and EV charging and battery systems.",
+    website: "https://www.webasto-group.com"
+  },
+  {
+    name: "HELLA", city: "Lippstadt", state: "nrw",
+    lat: 51.6740, lng: 8.3480,
+    sector: "automotive", size: "global", founded: 1899,
+    description: "Lighting and electronics specialist for the automotive industry (part of FORVIA).",
+    website: "https://www.hella.com"
+  },
+  {
+    name: "Knorr-Bremse", city: "Munich", state: "bavaria",
+    lat: 48.1830, lng: 11.5160,
+    sector: "automotive", size: "global", founded: 1905,
+    description: "World market leader in braking systems for rail and commercial vehicles.",
+    website: "https://www.knorr-bremse.com"
+  },
+  {
+    name: "MAN Truck & Bus", city: "Munich", state: "bavaria",
+    lat: 48.1900, lng: 11.5430,
+    sector: "automotive", size: "global", founded: 1758,
+    description: "Manufacturer of trucks, buses, and transport solutions (TRATON / Volkswagen).",
+    website: "https://www.man.eu"
+  },
+
+  // ── AI & ML (batch 2) ─────────────────────────────────────────────────────
+  {
+    name: "Cognigy", city: "Düsseldorf", state: "nrw",
+    lat: 51.2200, lng: 6.7900,
+    sector: "ai_ml", size: "mid", founded: 2016,
+    description: "Enterprise conversational-AI platform automating customer service across voice and chat.",
+    website: "https://www.cognigy.com"
+  },
+  {
+    name: "KONUX", city: "Munich", state: "bavaria",
+    lat: 48.1500, lng: 11.5800,
+    sector: "ai_ml", size: "mid", founded: 2014,
+    description: "AI and IoT systems for predictive maintenance of railway networks.",
+    website: "https://www.konux.com"
+  },
+  {
+    name: "brighter AI", city: "Berlin", state: "berlin",
+    lat: 52.5200, lng: 13.4050,
+    sector: "ai_ml", size: "startup", founded: 2017,
+    description: "Privacy technology that anonymizes faces and licence plates in images and video.",
+    website: "https://brighter.ai"
+  },
+
+  // ── INDUSTRIAL (batch 2) ──────────────────────────────────────────────────
+  {
+    name: "KION Group", city: "Frankfurt", state: "hesse",
+    lat: 50.1100, lng: 8.6800,
+    sector: "industrial", size: "global", founded: 2006,
+    description: "Intralogistics leader in forklifts and warehouse automation (Linde, STILL, Dematic).",
+    website: "https://www.kiongroup.com"
+  },
+  {
+    name: "Jungheinrich", city: "Hamburg", state: "hamburg",
+    lat: 53.5400, lng: 10.0700,
+    sector: "industrial", size: "global", founded: 1953,
+    description: "Intralogistics group for forklifts, automated warehouses, and material handling.",
+    website: "https://www.jungheinrich.com"
+  },
+  {
+    name: "Krones", city: "Neutraubling", state: "bavaria",
+    lat: 48.9930, lng: 12.2050,
+    sector: "industrial", size: "global", founded: 1951,
+    description: "Lines and machines for filling and packaging beverages and liquid foods.",
+    website: "https://www.krones.com"
+  },
+  {
+    name: "WAGO", city: "Minden", state: "nrw",
+    lat: 52.2880, lng: 8.9170,
+    sector: "industrial", size: "big", founded: 1951,
+    description: "Electrical interconnection and automation technology — spring-clamp connectors and PLCs.",
+    website: "https://www.wago.com"
+  },
+  {
+    name: "Lenze", city: "Aerzen", state: "lower_saxony",
+    lat: 52.0470, lng: 9.2700,
+    sector: "industrial", size: "big", founded: 1947,
+    description: "Motion-centric automation: drives, motors, and control for machine builders.",
+    website: "https://www.lenze.com"
+  },
+  {
+    name: "Endress+Hauser", city: "Weil am Rhein", state: "bw",
+    lat: 47.5940, lng: 7.6200,
+    sector: "industrial", size: "global", founded: 1953,
+    description: "Process-automation instrumentation for measurement, analytics, and monitoring.",
+    website: "https://www.endress.com"
+  },
+  {
+    name: "Kärcher", city: "Winnenden", state: "bw",
+    lat: 48.8780, lng: 9.4000,
+    sector: "industrial", size: "global", founded: 1935,
+    description: "Cleaning-equipment leader expanding into autonomous cleaning robots.",
+    website: "https://www.kaercher.com"
+  },
+
+  // ── SOFTWARE (batch 2) ────────────────────────────────────────────────────
+  {
+    name: "Nemetschek", city: "Munich", state: "bavaria",
+    lat: 48.1820, lng: 11.6100,
+    sector: "software", size: "global", founded: 1963,
+    description: "Software group for architecture, engineering, construction, and media (AEC/CAD).",
+    website: "https://www.nemetschek.com"
+  },
+  {
+    name: "IONOS", city: "Montabaur", state: "rhineland_palatinate",
+    lat: 50.4380, lng: 7.8230,
+    sector: "software", size: "global", founded: 1988,
+    description: "One of Europe's largest web-hosting and cloud providers for SMEs.",
+    website: "https://www.ionos.com"
+  },
+  {
+    name: "N26", city: "Berlin", state: "berlin",
+    lat: 52.5000, lng: 13.4200,
+    sector: "software", size: "big", founded: 2013,
+    description: "Mobile-first neobank serving millions of customers across Europe.",
+    website: "https://n26.com"
+  },
+
+  // ── AEROSPACE & DEFENSE (batch 2) ─────────────────────────────────────────
+  {
+    name: "Diehl Defence", city: "Überlingen", state: "bw",
+    lat: 47.7700, lng: 9.1600,
+    sector: "defense", size: "big", founded: 1902,
+    description: "Guided missiles, ammunition, and defense electronics.",
+    website: "https://www.diehl.com"
+  },
+  {
+    name: "KNDS Deutschland", city: "Munich", state: "bavaria",
+    lat: 48.1750, lng: 11.5600,
+    sector: "defense", size: "big", founded: 1873,
+    description: "Land-defense systems including the Leopard 2 main battle tank (KMW).",
+    website: "https://www.knds.de"
+  },
+  {
+    name: "Lürssen", city: "Bremen", state: "bremen",
+    lat: 53.1700, lng: 8.6400,
+    sector: "defense", size: "big", founded: 1875,
+    description: "Shipbuilder of naval vessels and large custom yachts.",
+    website: "https://www.luerssen.de"
+  },
+  {
+    name: "ARX Robotics", city: "Munich", state: "bavaria",
+    lat: 48.1400, lng: 11.5800,
+    sector: "defense", size: "startup", founded: 2022,
+    description: "Autonomous unmanned ground vehicles and software for defense and security.",
+    website: "https://arx-robotics.com"
+  },
+
+  // ── AGRICULTURE (batch 2) ─────────────────────────────────────────────────
+  {
+    name: "STIHL", city: "Waiblingen", state: "bw",
+    lat: 48.8300, lng: 9.3200,
+    sector: "agriculture", size: "global", founded: 1926,
+    description: "Outdoor power equipment and robotic mowers for forestry, farming, and gardens.",
+    website: "https://www.stihl.com"
+  },
+  {
+    name: "Big Dutchman", city: "Vechta", state: "lower_saxony",
+    lat: 52.7270, lng: 8.2870,
+    sector: "agriculture", size: "big", founded: 1938,
+    description: "Automated feeding and housing systems for poultry and pig farming.",
+    website: "https://www.bigdutchman.com"
+  },
+  {
+    name: "BayWa", city: "Munich", state: "bavaria",
+    lat: 48.1500, lng: 11.5900,
+    sector: "agriculture", size: "global", founded: 1923,
+    description: "Agricultural trade, machinery, and digital farming services group.",
+    website: "https://www.baywa.com"
   },
 ];

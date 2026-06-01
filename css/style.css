@@ -82,27 +82,20 @@ body {
   flex-shrink: 0;
 }
 
-/* Floating map control — top-right corner */
+/* Sector Grid toggle — icon button in the filter bar (next to the Sector label) */
 #grid-toggle {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 500;
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
-  border: 1px solid var(--border);
+  justify-content: center;
+  padding: 5px;
+  border: 1.5px solid var(--border);
   border-radius: var(--r);
-  background: white;
+  background: var(--surface);
   color: var(--text-2);
-  font-size: 0.78rem;
-  font-weight: 600;
   cursor: pointer;
   font-family: var(--f);
-  box-shadow: 0 2px 8px rgba(41,55,64,0.12);
-  transition: right 0.25s ease, color 0.14s, border-color 0.14s, background 0.14s;
-  white-space: nowrap;
+  transition: color 0.14s, border-color 0.14s, background 0.14s;
 }
 
 #grid-toggle:hover { color: var(--brand); border-color: var(--accent); }
@@ -112,8 +105,6 @@ body {
   color: var(--bg);
   border-color: var(--brand);
 }
-
-#grid-toggle.shifted { right: 330px; }
 
 #welcome-reopen {
   width: 26px;
@@ -166,8 +157,7 @@ body {
   padding: 0 16px;
   gap: 8px;
   z-index: 999;
-  overflow-x: auto;
-  scrollbar-width: none;
+  overflow: hidden;
 }
 
 #filter-bar::-webkit-scrollbar { display: none; }
@@ -181,7 +171,16 @@ body {
   flex-shrink: 0;
 }
 
-#filter-btns { display: flex; gap: 5px; white-space: nowrap; }
+#filter-btns {
+  display: flex;
+  gap: 5px;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+#filter-btns::-webkit-scrollbar { display: none; }
 
 .filter-btn {
   display: inline-flex;
@@ -216,13 +215,8 @@ body {
   flex-shrink: 0;
 }
 
-.btn-count {
-  font-size: 0.66rem;
-  opacity: 0.6;
-  margin-left: 1px;
-}
-
-.filter-btn.active .btn-count { opacity: 0.75; }
+/* Sectors with nothing in range (e.g. under Near Bonn) are hidden */
+.filter-btn.chip-hidden { display: none; }
 
 .filter-sep {
   width: 1px;
@@ -232,19 +226,18 @@ body {
   margin: 0 2px;
 }
 
-/* Simple understated toggle */
+/* Location-pin toggle */
 #bonn-filter {
-  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
   border: none;
-  border-radius: 14px;
+  border-radius: 50%;
   background: transparent;
-  cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: 600;
   color: var(--text-3);
-  font-family: var(--f);
+  cursor: pointer;
   transition: all 0.13s;
-  white-space: nowrap;
 }
 
 #bonn-filter:hover { color: var(--brand); }
@@ -254,8 +247,72 @@ body {
   background: var(--surface);
 }
 
+/* Near Bonn distance control */
+#bonn-control {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Slider drops into a small popover under the filter bar when active */
+#bonn-popover {
+  display: none;
+  position: fixed;
+  top: 116px;
+  right: 56px;   /* sits to the left of the floating Sector Grid button */
+  align-items: center;
+  gap: 9px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: 0 4px 14px rgba(41,55,64,0.16);
+  padding: 8px 13px;
+  z-index: 600;
+}
+
+#bonn-control.expanded #bonn-popover { display: inline-flex; }
+
+#bonn-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 88px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  cursor: pointer;
+}
+
+#bonn-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--brand);
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(41,55,64,0.3);
+  cursor: pointer;
+}
+
+#bonn-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--brand);
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(41,55,64,0.3);
+  cursor: pointer;
+}
+
+#bonn-km {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-2);
+  white-space: nowrap;
+  min-width: 44px;
+}
+
 /* Zoom controls — top-right, under the Sector Grid button */
-.leaflet-top.leaflet-right { top: 52px; }
+.leaflet-top.leaflet-right { top: 12px; }
 .leaflet-right .leaflet-control { margin-right: 12px; }
 .leaflet-control-zoom {
   border: 1px solid var(--border) !important;
@@ -820,6 +877,21 @@ path.leaflet-interactive { outline: none; }
   box-shadow: 0 2px 6px rgba(41,55,64,0.3);
 }
 
+/* ── Bonn home robot ────────────────────────────────────────────────────── */
+
+.bonn-robot {
+  filter: drop-shadow(0 2px 3px rgba(41,55,64,0.4));
+  transition: transform 0.15s ease;
+}
+
+.bonn-robot:hover { transform: scale(1.12); }
+
+.bonn-robot svg {
+  display: block;
+  width: 30px;
+  height: 38px;
+}
+
 /* ── Region markers ─────────────────────────────────────────────────────── */
 
 /* Leaflet tooltip for region names */
@@ -850,7 +922,6 @@ path.leaflet-interactive { outline: none; }
   #filter-bar { padding: 0 10px; gap: 5px; }
   .filter-label { display: none; }
   .filter-btn { padding: 4px 9px; font-size: 0.71rem; }
-  .btn-count { display: none; }
   .filter-sep { display: none; }
 
   #legend { display: none; }
@@ -877,6 +948,5 @@ path.leaflet-interactive { outline: none; }
   }
 
   #legend.shifted { right: 20px; }
-  #grid-toggle.shifted { right: 12px; }
   #welcome-card { padding: 22px 18px; }
 }
