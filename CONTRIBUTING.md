@@ -45,3 +45,10 @@ Same fields, in [`data/institutes.js`](data/institutes.js). Always use
 1. Fork the repo and create a branch.
 2. Add your entry (open `index.html` locally to check it appears).
 3. Open a pull request describing what you added.
+
+## Recognition
+
+Everyone who contributes shows up in the **[Contributors](README.md#contributors)**
+image in the README — your avatar, linked to your GitHub profile. It updates
+automatically from the commit history, so once your pull request is merged you'll
+appear there. Adding a single company is enough; you don't have to write code.

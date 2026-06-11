@@ -52,6 +52,13 @@ Adding a company or institute takes one entry and no code — see
   (data © GeoBasis-DE / BKG, [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0))
 - Map rendering: [Leaflet](https://leafletjs.com/)
 
+## Contributors
+
+This map is a community effort — every company on it was added by someone like
+you. We'd love to see your face below: just [open a Pull Request](CONTRIBUTING.md).
+
+[![Contributors](https://contrib.rocks/image?repo=robonn-club/industry-map)](https://github.com/robonn-club/industry-map/graphs/contributors)
+
 ## License
 
 [MIT](LICENSE) © 2026 Robonn — Robotics Club at the University of Bonn
