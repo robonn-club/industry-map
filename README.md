@@ -9,7 +9,7 @@ companies and labs to connect with.
 
 ## What it shows
 
-- **100 companies and research institutes** across 8 sectors, plotted on a precise
+- **245 companies and research institutes** across 8 sectors, plotted on a precise
   vector map of Germany and its 16 states.
 - **Multi-select sector filters**, a **Near Bonn** filter, and a **Sector Grid**
   that compares all sectors at once.
@@ -28,16 +28,19 @@ python3 -m http.server 8080   # then open http://localhost:8080
 ## Project structure
 
 ```
-index.html          # page structure
-css/style.css       # styling (Robonn brand)
-js/app.js           # all logic
+index.html              # page structure
+css/style.css           # styling (Robonn brand)
+js/app.js               # all logic
 data/
-  companies.js      # companies (7 sectors)
-  institutes.js     # research institutes & university labs
-  regions.js        # regional profiles
-  germany.js        # national outline
-  bundeslaender.js  # the 16 states
-  world.js          # world backdrop
+  companies/            # companies (7 sectors), split by size
+    global.js  big.js  mid.js  startup.js
+    index.js            # merges the size files into COMPANIES
+  institutes.js         # research institutes & university labs
+  regions.js            # regional profiles
+  geo/                  # map boundaries
+    germany.js          # national outline
+    bundeslaender.js    # the 16 states
+    world.js            # world backdrop
 ```
 
 ## Contributing

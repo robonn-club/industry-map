@@ -5,8 +5,9 @@ company or research institute** — no coding required, just one JSON-style entr
 
 ## Add a company
 
-Open [`data/companies.js`](data/companies.js) and copy an existing entry into the
-right sector block:
+Companies are split by size into [`data/companies/`](data/companies/) — open the
+file matching the company's size (`global.js`, `big.js`, `mid.js`, or
+`startup.js`) and copy an existing entry into the right sector block:
 
 ```js
 {
