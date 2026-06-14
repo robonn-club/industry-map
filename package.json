@@ -1,0 +1,14 @@
+{
+  "name": "robonn-industry-map",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive map of Germany's robotics & automation industry.",
+  "type": "module",
+  "scripts": {
+    "build:geo": "node scripts/build-geo.mjs",
+    "validate": "node scripts/validate.mjs"
+  },
+  "devDependencies": {
+    "mapshaper": "^0.7.22"
+  }
+}

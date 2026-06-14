@@ -8,3 +8,12 @@ Thumbs.db
 # Editor
 .vscode/
 *.swp
+
+# Node
+node_modules/
+
+# Nominatim geocoder cache (regenerable)
+scripts/.geocode-cache.json
+
+# Geocoder review/worklist (regenerable: node scripts/geocode.mjs)
+data/_geocode.review.json

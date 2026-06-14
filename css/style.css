@@ -208,12 +208,26 @@ body {
   color: white;
 }
 
-.btn-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
+/* Sector icon — single glyph style reused across chips, legend, list, popup,
+   grid and map markers. Inherits colour from context (currentColor). */
+.sector-icon {
+  width: 1em;
+  height: 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
   flex-shrink: 0;
+  display: block;
 }
+
+.chip-icon {
+  display: inline-flex;
+  font-size: 14px;
+  color: var(--clr);            /* sector colour when inactive */
+}
+.filter-btn.active .chip-icon { color: #fff; }   /* white on the coloured active chip */
 
 /* Sectors with nothing in range (e.g. under Near Bonn) are hidden */
 .filter-btn.chip-hidden { display: none; }
@@ -312,8 +326,18 @@ body {
 }
 
 /* Zoom controls — top-right, under the Sector Grid button */
-.leaflet-top.leaflet-right { top: 12px; }
-.leaflet-right .leaflet-control { margin-right: 12px; }
+.leaflet-top.leaflet-right { top: 10px; }
+.leaflet-right .leaflet-control { margin-right: 8px; }
+.leaflet-bar {
+  width: 28px !important;
+}
+.leaflet-bar a {
+  width: 28px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+  font-size: 1rem !important;
+  padding: 0 !important;
+}
 .leaflet-control-zoom {
   border: 1px solid var(--border) !important;
   box-shadow: 0 2px 8px rgba(41,55,64,0.12) !important;
@@ -321,10 +345,27 @@ body {
   overflow: hidden;
 }
 .leaflet-control-zoom a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-2);
+  width: 28px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+  font-size: 1rem !important;
   border-bottom-color: var(--border);
+  padding: 0 !important;
 }
+.leaflet-control-zoom a:first-child { border-bottom: 1px solid var(--border); }
 .leaflet-control-zoom a:hover { color: var(--brand); }
+
+/* Hide legend and map controls during list or grid mode */
+body.list-active #legend,
+body.grid-active #legend,
+body.list-active .leaflet-control,
+body.grid-active .leaflet-control {
+  display: none !important;
+}
 
 /* ── App body ────────────────────────────────────────────────────────────── */
 
@@ -336,10 +377,19 @@ body {
   position: relative;
 }
 
-#map { flex: 1; min-width: 0; background: #D3E4F0; }
+#map { flex: 1; min-width: 0; background: #18191b; }
 
-/* Vector basemap water tone — soft map-blue so seas read as water, not grey */
-.leaflet-container { background: #D3E4F0; }
+/* Dark tone matching the CARTO Dark Matter basemap, so there's no light flash
+   before the tiles paint. */
+.leaflet-container { background: #18191b; }
+
+/* Tile attribution — required by OSM/CARTO; kept quiet on the dark ground. */
+.leaflet-control-attribution {
+  background: rgba(20,22,24,0.7) !important;
+  color: rgba(200,212,222,0.6) !important;
+  font-size: 0.62rem;
+}
+.leaflet-control-attribution a { color: rgba(200,212,222,0.85) !important; }
 
 /* No black focus box when a state path is clicked */
 .leaflet-interactive:focus { outline: none; }
@@ -490,15 +540,51 @@ path.leaflet-interactive { outline: none; }
   right: 20px;
   background: white;
   border-radius: var(--r);
-  padding: 12px 14px;
+  padding: 8px 10px;
   border: 1px solid var(--border);
   box-shadow: 0 2px 10px rgba(41,55,64,0.1);
-  z-index: 500;
-  min-width: 158px;
+  z-index: 1100;
+  min-width: 130px;
   transition: right 0.25s ease;
 }
 
 #legend.shifted { right: 330px; }
+
+/* Corner control: minimises the box; the info icon shows only when collapsed */
+#legend-collapse {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: color 0.13s, background 0.13s;
+}
+#legend-collapse:hover { color: var(--brand); background: var(--surface); }
+#legend-collapse .ic-info { display: none; }
+
+/* Collapsed: body hidden, the whole box shrinks to a small info chip */
+#legend.collapsed {
+  min-width: 0;
+  padding: 0;
+}
+#legend.collapsed #legend-body { display: none; }
+#legend.collapsed #legend-collapse {
+  position: static;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r);
+}
+#legend.collapsed .ic-min { display: none; }
+#legend.collapsed .ic-info { display: inline-flex; }
 
 .legend-heading {
   font-size: 0.58rem;
@@ -512,13 +598,33 @@ path.leaflet-interactive { outline: none; }
 .leg-row {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin-bottom: 5px;
+  gap: 6px;
+  margin-bottom: 4px;
   color: var(--text-2);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
+}
+
+.leg-row > span {
+  display: inline-flex;
+  align-items: center;
 }
 
 .leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* Headings after the first get breathing room from the section above */
+#legend .legend-heading:not(:first-child) { margin-top: 14px; }
+
+/* Size/Type swatches: neutral ink, centered on a common axis so the graduated
+   circles and the company/institute markers line up regardless of diameter */
+.leg-size-slot { width: 24px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+.leg-size-slot .leg-dot { background: var(--text-2); }
+/* Hollow ring — mirrors the institute markers on the map (filled disc = company) */
+.leg-ring {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  background: transparent; border: 1.5px solid var(--text-2);
+}
+
+.leg-icon { display: inline-flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
 
 /* ── Welcome overlay ────────────────────────────────────────────────────── */
 
@@ -587,42 +693,6 @@ path.leaflet-interactive { outline: none; }
   line-height: 1.7;
   margin-bottom: 18px;
 }
-
-#welcome-tips {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 22px;
-  padding: 14px;
-  background: var(--bg);
-  border-radius: var(--r);
-  border: 1px solid var(--border);
-}
-
-.wtip {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: 0.8rem;
-  color: var(--text-2);
-  line-height: 1.45;
-}
-
-.wtip strong { color: var(--brand); }
-
-.wtip-icon {
-  width: 28px;
-  height: 28px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.wtip-icon svg { width: 14px; height: 14px; color: var(--accent); }
 
 #welcome-cta {
   width: 100%;
@@ -738,7 +808,7 @@ path.leaflet-interactive { outline: none; }
 
 .mini-header { display: flex; align-items: center; gap: 7px; margin-bottom: 10px; }
 
-.mini-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.mini-icon { display: inline-flex; font-size: 15px; flex-shrink: 0; }
 
 .mini-label {
   font-family: var(--f-head);
@@ -795,6 +865,9 @@ path.leaflet-interactive { outline: none; }
 }
 
 .co-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 0.6rem;
   font-weight: 700;
   color: white;
@@ -805,6 +878,7 @@ path.leaflet-interactive { outline: none; }
   margin-top: 2px;
   letter-spacing: 0.02em;
 }
+.badge-icon { font-size: 12px; }   /* white sector icon on the coloured badge */
 
 .co-meta {
   font-size: 0.71rem;
@@ -852,21 +926,21 @@ path.leaflet-interactive { outline: none; }
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--brand);
-  border: 2px solid white;
-  box-shadow: 0 0 0 2px var(--brand);
+  background: #EAF1F6;
+  border: 2px solid #18191b;
+  box-shadow: 0 0 0 2px rgba(234,241,246,0.9);
   flex-shrink: 0;
   animation: bonn-pulse 2.8s ease-in-out infinite;
 }
 
 @keyframes bonn-pulse {
-  0%, 100% { box-shadow: 0 0 0 2px var(--brand); }
-  50%       { box-shadow: 0 0 0 5px rgba(41,55,64,0.18); }
+  0%, 100% { box-shadow: 0 0 0 2px rgba(234,241,246,0.9); }
+  50%       { box-shadow: 0 0 0 5px rgba(234,241,246,0.25); }
 }
 
 .bonn-label {
-  background: var(--brand);
-  color: var(--bg);
+  background: #EAF1F6;
+  color: var(--brand);
   font-family: var(--f);
   font-size: 0.58rem;
   font-weight: 700;
@@ -877,27 +951,12 @@ path.leaflet-interactive { outline: none; }
   box-shadow: 0 2px 6px rgba(41,55,64,0.3);
 }
 
-/* ── Bonn home robot ────────────────────────────────────────────────────── */
-
-.bonn-robot {
-  filter: drop-shadow(0 2px 3px rgba(41,55,64,0.4));
-  transition: transform 0.15s ease;
-}
-
-.bonn-robot:hover { transform: scale(1.12); }
-
-.bonn-robot svg {
-  display: block;
-  width: 30px;
-  height: 38px;
-}
-
 /* ── Region markers ─────────────────────────────────────────────────────── */
 
 /* Leaflet tooltip for region names */
 .region-tooltip {
   background: var(--brand) !important;
-  border: none !important;
+  border: 1px solid rgba(200,212,222,0.28) !important;
   border-radius: 4px !important;
   color: var(--bg) !important;
   font-family: var(--f) !important;
@@ -910,6 +969,164 @@ path.leaflet-interactive { outline: none; }
 }
 
 .region-tooltip::before { display: none !important; }
+
+/* ── List toggle (mirrors the Sector Grid toggle) ───────────────────────── */
+
+#list-toggle {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+  color: var(--text-2);
+  cursor: pointer;
+  font-family: var(--f);
+  transition: color 0.14s, border-color 0.14s, background 0.14s;
+}
+
+#list-toggle:hover { color: var(--brand); border-color: var(--accent); }
+
+#list-toggle.active {
+  background: var(--brand);
+  color: var(--bg);
+  border-color: var(--brand);
+}
+
+/* ── Origin picker (in the distance popover) ────────────────────────────── */
+
+#bonn-popover { flex-wrap: wrap; }
+
+.pop-lbl {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+}
+
+#origin-city {
+  font-family: var(--f);
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+  padding: 4px 6px;
+  cursor: pointer;
+  max-width: 130px;
+}
+
+#origin-city:focus { outline: none; border-color: var(--accent); background: white; }
+
+/* ── Student & jobs cues ────────────────────────────────────────────────── */
+
+.co-footer .co-jobs { margin-right: 14px; }
+
+/* ── List / table overlay (mirrors the grid overlay) ────────────────────── */
+
+#list-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 800;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  transition: opacity 0.2s ease;
+}
+
+#list-overlay.grid-hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+#list-header {
+  background: white;
+  border-bottom: 1px solid var(--border);
+  padding: 11px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.list-tools { display: flex; align-items: center; gap: 10px; }
+
+#list-search {
+  padding: 6px 11px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+  font-family: var(--f);
+  font-size: 0.78rem;
+  color: var(--text);
+  width: 180px;
+}
+
+#list-search:focus { outline: none; border-color: var(--accent); background: white; }
+
+#list-close {
+  padding: 5px 13px;
+  border-radius: var(--r);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  font-family: var(--f);
+  transition: all 0.13s;
+  white-space: nowrap;
+}
+
+#list-close:hover { border-color: var(--accent); color: var(--brand); }
+
+#list-container { flex: 1; overflow-y: auto; }
+
+.list-empty { padding: 28px 20px; color: var(--text-3); font-style: italic; font-size: 0.85rem; }
+
+.list-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+
+.list-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  text-align: left;
+  padding: 9px 14px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-3);
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+}
+
+.list-table thead th.nosort { cursor: default; }
+.list-table thead th:not(.nosort):hover { color: var(--brand); }
+.sort-ind { font-size: 0.6rem; margin-left: 3px; color: var(--accent); }
+
+.list-table tbody tr {
+  border-bottom: 1px solid var(--surface);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.list-table tbody tr:hover { background: white; }
+.list-table td { padding: 8px 14px; color: var(--text-2); vertical-align: middle; white-space: nowrap; }
+
+.list-name { font-weight: 700; color: var(--brand); }
+.list-sector { display: inline-flex; align-items: center; gap: 6px; }
+.list-sector .sector-icon { font-size: 15px; }
+.list-sector-lbl { color: var(--text); }   /* keep label ink-coloured; icon stays sector-coloured */
+.list-dist { font-variant-numeric: tabular-nums; }
 
 /* ── Mobile ──────────────────────────────────────────────────────────────── */
 
