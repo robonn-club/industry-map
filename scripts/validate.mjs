@@ -63,6 +63,7 @@ for (const [file, varName, expectSize] of sources) {
     total++;
     const at = `${file}[${i}] ${e?.name ?? "(no name)"}`;
     for (const k of REQUIRED) if (e[k] === undefined || e[k] === "") errors.push(`${at}: missing/empty "${k}"`);
+    if (e.address !== undefined && typeof e.address !== "string") errors.push(`${at}: address must be a string`);
     if (e.state && !STATES.has(e.state)) errors.push(`${at}: invalid state "${e.state}"`);
     if (e.sector && !SECTORS.has(e.sector)) errors.push(`${at}: invalid sector "${e.sector}"`);
     if (e.size && !SIZES.has(e.size)) errors.push(`${at}: invalid size "${e.size}"`);

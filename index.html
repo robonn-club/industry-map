@@ -24,36 +24,9 @@
       </div>
 
       <p id="welcome-desc">
-        An open map of Germany's robotics, tech, and industrial companies and
-        research labs.
+        An open map of Germany's robotics, tech, and industrial company headquarters
+        and research labs.
       </p>
-
-      <div id="welcome-tips">
-        <div class="wtip">
-          <span class="wtip-icon">
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-              <circle cx="10" cy="10" r="5"/><circle cx="10" cy="10" r="1.5" fill="currentColor" stroke="none"/>
-            </svg>
-          </span>
-          <span><strong>Click a point</strong> — details &amp; website</span>
-        </div>
-        <div class="wtip">
-          <span class="wtip-icon">
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-              <path d="M10 2C7 2 4 4.5 4 8c0 5 6 10 6 10s6-5 6-10c0-3.5-3-6-6-6z"/><circle cx="10" cy="8" r="2"/>
-            </svg>
-          </span>
-          <span><strong>Click a state</strong> — its sector breakdown</span>
-        </div>
-        <div class="wtip">
-          <span class="wtip-icon">
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 4h14l-5.5 6.5V16l-3 2v-7.5L3 4z"/>
-            </svg>
-          </span>
-          <span><strong>Filter</strong> — by sector, Near Bonn, or the Sector Grid</span>
-        </div>
-      </div>
 
       <button id="welcome-cta">Explore the map &rarr;</button>
     </div>
@@ -96,16 +69,24 @@
         <rect x="1" y="9" width="6" height="6" rx="1.2"/><rect x="9" y="9" width="6" height="6" rx="1.2"/>
       </svg>
     </button>
+    <button id="list-toggle" title="View as a sortable list">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="3" x2="15" y2="3"/><line x1="5" y1="8" x2="15" y2="8"/><line x1="5" y1="13" x2="15" y2="13"/>
+        <circle cx="1.6" cy="3" r="1" fill="currentColor" stroke="none"/><circle cx="1.6" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="1.6" cy="13" r="1" fill="currentColor" stroke="none"/>
+      </svg>
+    </button>
     <div id="filter-btns"></div>
     <div class="filter-sep"></div>
     <div id="bonn-control">
-      <button id="bonn-filter" title="Filter by distance from Bonn">
+      <button id="bonn-filter" title="Filter by distance from your city">
         <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
           <path d="M10 2C7 2 4 4.5 4 8c0 5 6 10 6 10s6-5 6-10c0-3.5-3-6-6-6z"/><circle cx="10" cy="8" r="2"/>
         </svg>
       </button>
       <div id="bonn-popover">
-        <input type="range" id="bonn-range" min="25" max="600" step="25" value="100" aria-label="Distance from Bonn in km" />
+        <span class="pop-lbl">Near</span>
+        <select id="origin-city" aria-label="Your city / university"></select>
+        <input type="range" id="bonn-range" min="25" max="600" step="25" value="100" aria-label="Distance in km" />
         <span id="bonn-km">100 km</span>
       </div>
     </div>
@@ -126,6 +107,20 @@
       <div id="grid-container"></div>
     </div>
 
+    <div id="list-overlay" class="grid-hidden">
+      <div id="list-header">
+        <div class="grid-title-group">
+          <span class="grid-title">Company List</span>
+          <span class="grid-hint">Click a row to locate it &middot; click a column to sort</span>
+        </div>
+        <div class="list-tools">
+          <input id="list-search" type="search" placeholder="Filter rows…" aria-label="Filter list" />
+          <button id="list-close">&#8592; Back to Map</button>
+        </div>
+      </div>
+      <div id="list-container"></div>
+    </div>
+
     <aside id="region-panel" class="panel-hidden">
       <div id="panel-header">
         <button id="panel-close" title="Close">&times;</button>
@@ -136,12 +131,21 @@
 
   <!-- ── Legend ─────────────────────────────────────────────────────────── -->
   <div id="legend">
-    <div class="legend-heading">SECTOR</div>
-    <div id="legend-sectors"></div>
+    <button id="legend-collapse" aria-expanded="true" aria-controls="legend-body" title="Hide legend">
+      <svg class="ic-min" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="8" x2="12" y2="8"/></svg>
+      <svg class="ic-info" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><line x1="8" y1="7.2" x2="8" y2="11"/><circle cx="8" cy="4.9" r="0.7" fill="currentColor" stroke="none"/></svg>
+    </button>
+    <div id="legend-body">
+      <div class="legend-heading">SECTOR</div>
+      <div id="legend-sectors"></div>
+      <div class="legend-heading">SIZE</div>
+      <div id="legend-sizes"></div>
+      <div class="legend-heading">TYPE</div>
+      <div id="legend-types"></div>
+    </div>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="data/geo/world.js"></script>
   <script src="data/geo/germany.js"></script>
   <script src="data/geo/bundeslaender.js"></script>
   <script src="data/companies/global.js"></script>

@@ -41,11 +41,25 @@ Same fields, in [`data/institutes.js`](data/institutes.js). Always use
 - Keep descriptions to **one sentence**.
 - Place the entry under the matching sector comment to keep the file tidy.
 
+## Editing the map boundaries
+
+The files in [`data/geo/`](data/geo/) (`germany.js`, `bundeslaender.js`, `world.js`) are
+**generated — don't hand-edit them.** They're built from the pristine sources in `data/geo/src/`:
+
+```bash
+npm install
+npm run build:geo
+```
+
+`scripts/build-geo.mjs` simplifies the Bundesländer and derives the national outline as their exact
+dissolve (one shared topology), so the borders always match. Edit `data/geo/src/` and rebuild.
+
 ## Submitting
 
 1. Fork the repo and create a branch.
 2. Add your entry (open `index.html` locally to check it appears).
-3. Open a pull request describing what you added.
+3. If you touched data, run `node scripts/validate.mjs` (and `npm run build:geo` for boundaries).
+4. Open a pull request describing what you added.
 
 ## Recognition
 

@@ -37,11 +37,33 @@ data/
     index.js            # merges the size files into COMPANIES
   institutes.js         # research institutes & university labs
   regions.js            # regional profiles
-  geo/                  # map boundaries
-    germany.js          # national outline
-    bundeslaender.js    # the 16 states
-    world.js            # world backdrop
+  geo/                  # Germany state overlay (generated — run `npm run build:geo`)
+    germany.js          # national outline (exact dissolve of the 16 states)
+    bundeslaender.js    # the 16 states (interactive highlight layer)
+    world.js            # legacy vector backdrop (no longer rendered)
+    src/                # pristine sources the build reads from
+scripts/
+  build-geo.mjs         # regenerates the geo/*.js layers from src/
+  validate.mjs          # checks company/institute data
 ```
+
+## Map & boundaries
+
+The basemap is **CARTO Dark Matter** (OpenStreetMap data) raster tiles in Web Mercator — a precise,
+world-wide dark slippy map you can zoom from the globe down to a street. The coloured sector markers
+and an interactive **Bundesländer** overlay sit on top.
+
+The `germany.js` / `bundeslaender.js` overlay layers are **generated**, not hand-edited. They come
+from the pristine GeoJSON in `data/geo/src/` via [mapshaper](https://github.com/mbloch/mapshaper):
+
+```bash
+npm install
+npm run build:geo
+```
+
+The states and the national outline are built from **one shared topology** (the outline is the
+exact dissolve of the Bundesländer), so their borders always match. (`world.js` is still produced by
+the build but is no longer rendered — the tile basemap replaced it.)
 
 ## Contributing
 
@@ -50,10 +72,12 @@ Adding a company or institute takes one entry and no code — see
 
 ## Data & attribution
 
-- Country borders: [Natural Earth](https://www.naturalearthdata.com/) (public domain)
+- Basemap tiles: [CARTO](https://carto.com/attributions) Dark Matter, data ©
+  [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors
 - Germany & state boundaries: [deutschlandGeoJSON](https://github.com/isellsoap/deutschlandGeoJSON)
   (data © GeoBasis-DE / BKG, [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0))
 - Map rendering: [Leaflet](https://leafletjs.com/)
+- Boundary processing: [mapshaper](https://github.com/mbloch/mapshaper)
 
 ## Contributors
 
