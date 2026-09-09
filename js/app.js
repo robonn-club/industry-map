@@ -123,6 +123,13 @@ function jobsUrl(c) {
 
 const escapeAttr = s => String(s).replace(/"/g, '&quot;');
 
+// Contributor-supplied strings (name, city, description, region prose) are
+// interpolated into HTML all over this file. Anyone can open a PR adding an
+// entry, so every one of those values goes through esc() — a stray "<" in a
+// company name should render as text, never as markup.
+const ESC_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ESC_MAP[c]);
+
 // Popup is built on demand (function form passed to bindPopup) so the distance
 // line always reflects the current origin without re-binding markers.
 function popupHtml(c) {
@@ -135,14 +142,14 @@ function popupHtml(c) {
   return `
     <div class="co-popup">
       <div class="co-head">
-        <span class="co-name">${c.name}</span>
+        <span class="co-name">${esc(c.name)}</span>
         <span class="co-badge" style="background:${cfg.color}">${sectorIconSvg(c.sector, 'sector-icon badge-icon')}${cfg.label}</span>
       </div>
       <div class="co-meta">
-        ${c.city} &middot; ${SIZE_RANGE[c.size] ?? c.size}
-        <span class="co-dist">${c.distKm} km from ${origin.name}</span>
+        ${esc(c.city)} &middot; ${esc(SIZE_RANGE[c.size] ?? c.size)}
+        <span class="co-dist">${c.distKm} km from ${esc(origin.name)}</span>
       </div>
-      <p class="co-desc">${c.description}</p>
+      <p class="co-desc">${esc(c.description)}</p>
       <div class="co-footer">${jobsHtml}${websiteHtml}</div>
     </div>`;
 }
@@ -155,20 +162,39 @@ const map = L.map('map', {
   center: [51.0, 10.2], zoom: 6,
   minZoom: 2, maxZoom: 19,   // street level — the markers sit on real HQ buildings
   worldCopyJump: true,
-  attributionControl: true,   // CARTO / OpenStreetMap require attribution
+  attributionControl: true,   // Esri / OpenStreetMap require attribution
 });
 
 // Zoom controls top-right, sitting under the Sector Grid button
 map.zoomControl.setPosition('topright');
 
-// ── Basemap: CARTO Dark Matter (OpenStreetMap data) ───────────────────────────
-// A precise, world-wide dark slippy basemap. The coloured sector dots and the
-// Bundesland overlay sit on top and read vividly against the dark ground.
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-  subdomains: 'abcd',
-  maxZoom: 20,
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-}).addTo(map);
+// ── Basemap: Esri Dark Gray Canvas ────────────────────────────────────────────
+// A world-wide dark canvas basemap, designed to sit under data: quiet geometry,
+// no competing colour, so the sector dots and the Bundesland overlay carry the
+// eye. Keyless — no signup, no token in a public repo.
+//
+// We were on CARTO Dark Matter, but CARTO moved their basemap CDN behind an API
+// key and now stamps "API KEY REQUIRED" diagonally across every tile served
+// without one, which defaced the whole live map. Anything on basemaps.cartocdn.com
+// is off the table unless the club registers a key.
+//
+// Esri splits geometry and labels into two layers, so labels draw on top of the
+// ground but still under our overlay (statePane, z 210).
+const ESRI_ATTR = 'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, HERE, Garmin, '
+  + '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+// Dark Gray Canvas has no imagery past z16. maxNativeZoom lets Leaflet upscale
+// the z16 tile for the street-level zooms instead of requesting tiles that come
+// back as a light-grey "Map data not yet available" placeholder — the ground
+// softens as you close in, but the markers stay crisp vectors on their real HQ.
+const ESRI_TILE_OPTS = { maxZoom: 19, maxNativeZoom: 16, attribution: ESRI_ATTR };
+
+L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+  ESRI_TILE_OPTS).addTo(map);
+
+// City / region names, as a separate transparent overlay.
+L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+  { ...ESRI_TILE_OPTS, attribution: '' }).addTo(map);
 
 // Overlay panes sit above the tiles (z 200) but below the markers (paths in the
 // overlayPane at z 400), so the interactive states never cover the dots.
@@ -264,6 +290,12 @@ allFilters.forEach(([sector, label, color]) => {
   labelSpan.textContent = label;
   btn.appendChild(labelSpan);
 
+  // Filled by updateChipCounts() — how many entities this chip would show under
+  // whatever spatial filters are currently active.
+  const countSpan = document.createElement('span');
+  countSpan.className = 'chip-count';
+  btn.appendChild(countSpan);
+
   btn.addEventListener('click', () => {
     if (sector === 'all') activeSectors.clear();
     else activeSectors.has(sector) ? activeSectors.delete(sector) : activeSectors.add(sector);
@@ -272,7 +304,25 @@ allFilters.forEach(([sector, label, color]) => {
   document.getElementById('filter-btns').appendChild(btn);
 });
 
-// Spatial filters — reused by the chip visibility and the sector grid.
+// ── Reset ─────────────────────────────────────────────────────────────────────
+// "All" only clears sectors, so a user who has drilled into a Bundesland and a
+// 50 km radius has no single way back. This is it — one control that clears
+// every filter at once, shown only when there is something to undo.
+
+const resetBtn = document.getElementById('filter-reset');
+
+function anyFilterActive() {
+  return activeSectors.size > 0 || !!selectedRegion || bonnFilterActive;
+}
+
+resetBtn.addEventListener('click', () => {
+  activeSectors.clear();
+  closePanel();       // clears selectedRegion
+  deactivateBonn();   // clears the distance filter (leaves the repaint to us)
+  applyFilters();
+});
+
+// Spatial filters — reused by the chip counts and the sector grid.
 // The distance filter and a selected region are mutually exclusive (one focus at a time).
 function passesOrigin(c) {
   return !bonnFilterActive || c.distKm <= bonnRadiusKm;
@@ -288,15 +338,24 @@ function isVisible(c) {
   return sectorOk && passesOrigin(c) && passesRegion(c);
 }
 
-// Hide sectors with nothing in range (e.g. under Near Bonn), but always keep a
-// selected sector visible so an active filter can never become invisible.
-function updateChipVisibility() {
+// Show every chip its count under the current spatial filters, so you can see
+// where the data is before clicking. Sectors with nothing in range dim in place
+// instead of disappearing — a chip that vanishes takes the neighbouring chips'
+// positions with it, and the target you were aiming at moves out from under the
+// cursor. A selected sector never dims, so an active filter can't look disabled.
+function updateChipCounts() {
+  let inScope = 0;
   document.querySelectorAll('#filter-btns .filter-btn').forEach(b => {
     const s = b.dataset.sector;
     if (s === 'all') return;
     const n = ENTITIES.filter(c => c.sector === s && passesOrigin(c) && passesRegion(c)).length;
-    b.classList.toggle('chip-hidden', n === 0 && !activeSectors.has(s));
+    b.querySelector('.chip-count').textContent = n;
+    b.classList.toggle('chip-empty', n === 0 && !activeSectors.has(s));
+    inScope += n;
   });
+  // "All" shows what clearing the sector filter would leave you with.
+  const allBtn = document.querySelector('#filter-btns .filter-btn[data-sector="all"]');
+  if (allBtn) allBtn.querySelector('.chip-count').textContent = inScope;
 }
 
 // Every entity is its own marker — no clustering. Each dot keeps its sector
@@ -320,15 +379,39 @@ function applyFilters() {
     b.classList.toggle('active', s === 'all' ? activeSectors.size === 0 : activeSectors.has(s));
   });
   refreshMarkers();
-  updateChipVisibility();
-  // URL state (comma-separated)
-  const url = new URL(window.location);
-  activeSectors.size === 0
-    ? url.searchParams.delete('s')
-    : url.searchParams.set('s', [...activeSectors].join(','));
-  history.replaceState(null, '', url);
+  updateChipCounts();
+  resetBtn.hidden = !anyFilterActive();
+  syncUrl();
   updateStats();
   if (listVisible) buildList();
+}
+
+// ── Shareable state ───────────────────────────────────────────────────────────
+// Every filter lives in the query string, so a link pasted into Discord restores
+// exactly what the sender was looking at — not just the sector. syncUrl() runs
+// from each mutation path; readUrl() replays a link once on load through those
+// same public helpers, so there is one code path per state rather than two.
+//
+//   s  sectors, comma-separated      r  Bundesland id
+//   o  origin city (name)            d  distance km — presence means "filter on"
+//   v  open overlay: list | grid
+
+let booting = true;   // suppress URL writes while readUrl() replays a link
+
+function syncUrl() {
+  if (booting) return;
+  const url = new URL(window.location);
+  const p = url.searchParams;
+  const set = (k, v) => (v === null || v === undefined || v === '') ? p.delete(k) : p.set(k, v);
+
+  set('s', activeSectors.size ? [...activeSectors].join(',') : null);
+  set('r', selectedRegion);
+  // The default origin is implied — only a deliberate change is worth a param.
+  set('o', origin === UNIVERSITY_CITIES[0] ? null : origin.name);
+  set('d', bonnFilterActive ? bonnRadiusKm : null);
+  set('v', listVisible ? 'list' : gridVisible ? 'grid' : null);
+
+  history.replaceState(null, '', url);
 }
 
 // Select exactly one sector (used by the sector-grid cards)
@@ -416,7 +499,7 @@ function makeOriginPin(o) {
     interactive: false,
     icon: L.divIcon({
       className: '',
-      html: `<div class="bonn-pin"><span class="bonn-dot"></span><span class="bonn-label">${o.name}</span></div>`,
+      html: `<div class="bonn-pin"><span class="bonn-dot"></span><span class="bonn-label">${esc(o.name)}</span></div>`,
       iconSize: [0, 0],
       iconAnchor: [6, 6],
     }),
@@ -465,7 +548,9 @@ function toggleBonnFilter() {
     hideOriginMarker();
   }
   refreshMarkers();   // out-of-range entities are hidden, in line with the sector filter
-  updateChipVisibility();
+  updateChipCounts();
+  resetBtn.hidden = !anyFilterActive();
+  syncUrl();
   updateStats();
   if (listVisible) buildList();
 }
@@ -481,7 +566,7 @@ document.addEventListener('click', e => {
 
 // Origin picker — seed from UNIVERSITY_CITIES (Bonn default/first)
 UNIVERSITY_CITIES.forEach((c, i) => {
-  originSelect.insertAdjacentHTML('beforeend', `<option value="${i}">${c.name}</option>`);
+  originSelect.insertAdjacentHTML('beforeend', `<option value="${i}">${esc(c.name)}</option>`);
 });
 
 originSelect.addEventListener('change', () => {
@@ -494,9 +579,10 @@ originSelect.addEventListener('change', () => {
     showOriginMarker();
     map.flyToBounds(bonnCircle.getBounds(), { padding: [40, 40], duration: 1 });
     refreshMarkers();
-    updateChipVisibility();
+    updateChipCounts();
     updateStats();
   }
+  syncUrl();
   if (listVisible) buildList();
 });
 
@@ -509,7 +595,8 @@ bonnRange.addEventListener('input', () => {
   bonnKmLabel.textContent = `${bonnRadiusKm} km`;
   bonnCircle.setRadius(bonnRadiusKm * 1000);
   refreshMarkers();
-  updateChipVisibility();
+  updateChipCounts();
+  syncUrl();
   updateStats();
   if (listVisible) buildList();
 });
@@ -546,7 +633,7 @@ function openPanel(region) {
     .map(([s, cfg]) => {
       const pct = total ? Math.round((byS[s] / total) * 100) : 0;
       return `<div class="sb-row">
-        <span class="sb-lbl">${cfg.label}</span>
+        <span class="sb-lbl">${esc(cfg.label)}</span>
         <div class="sb-track"><div class="sb-fill" style="width:${pct}%;background:${cfg.color}"></div></div>
         <span class="sb-num">${byS[s]}</span>
       </div>`;
@@ -554,17 +641,17 @@ function openPanel(region) {
 
   const connHtml = region.connections
     .map(id => REGIONS.find(r => r.id === id)).filter(Boolean)
-    .map(r => `<button class="conn-tag" data-rid="${r.id}">${r.name}</button>`)
+    .map(r => `<button class="conn-tag" data-rid="${escapeAttr(r.id)}">${esc(r.name)}</button>`)
     .join('');
 
   panelContent.innerHTML = `
-    <div class="panel-name">${region.name}</div>
-    <div class="panel-tagline">${region.tagline}</div>
-    <p class="panel-overview">${region.overview}</p>
+    <div class="panel-name">${esc(region.name)}</div>
+    <div class="panel-tagline">${esc(region.tagline)}</div>
+    <p class="panel-overview">${esc(region.overview)}</p>
     <div class="panel-sec">SECTOR BREAKDOWN &mdash; ${total} companies</div>
     ${barsHtml || '<p class="panel-empty">No companies tracked yet.</p>'}
     <div class="panel-sec">KEY STRENGTHS</div>
-    <ul class="panel-strengths">${region.strengths.map(s => `<li>${s}</li>`).join('')}</ul>
+    <ul class="panel-strengths">${region.strengths.map(s => `<li>${esc(s)}</li>`).join('')}</ul>
     <div class="panel-sec">CONNECTED REGIONS</div>
     <div class="panel-conns">${connHtml}</div>
   `;
@@ -574,7 +661,9 @@ function openPanel(region) {
   legend.classList.add('shifted');
 
   refreshMarkers();          // show only this region's entities
-  updateChipVisibility();    // chips scope to what exists here
+  updateChipCounts();        // chips scope to what exists here
+  resetBtn.hidden = !anyFilterActive();
+  syncUrl();
   updateStats();
   if (listVisible) buildList();
 }
@@ -583,10 +672,12 @@ function closePanel() {
   if (selectedRegion) {
     selectedRegion = null;
     refreshMarkers();
-    updateChipVisibility();
+    updateChipCounts();
+    resetBtn.hidden = !anyFilterActive();
     updateStats();
     if (listVisible) buildList();
   }
+  syncUrl();
   selectState(null);
   panel.classList.add('panel-hidden');
   legend.classList.remove('shifted');
@@ -619,7 +710,7 @@ function buildGrid() {
       const [x, y] = project(c.lat, c.lng);
       const r = 3.2;
       return `<circle cx="${x}" cy="${y}" r="${r}" fill="${cfg.color}" fill-opacity="0.88"
-        stroke="white" stroke-width="0.8"><title>${c.name} · ${c.city}</title></circle>`;
+        stroke="white" stroke-width="0.8"><title>${esc(c.name)} · ${esc(c.city)}</title></circle>`;
     }).join('');
 
     const card = document.createElement('div');
@@ -656,13 +747,14 @@ function toggleGrid(show) {
   document.body.classList.toggle('grid-active', gridVisible);
   document.getElementById('grid-toggle').classList.toggle('active', gridVisible);
   if (gridVisible) buildGrid();
+  syncUrl();
 }
 
 document.getElementById('grid-toggle').addEventListener('click', () => {
   deactivateBonn();   // grid is a clean Germany-wide overview — clear spatial filters
   closePanel();       // also clears any selected region
   refreshMarkers();   // ensure the map reflects the cleared filters on return
-  updateChipVisibility();
+  updateChipCounts();
   updateStats();
   toggleGrid(true);   // buildGrid now sees no spatial filters → full Germany view
 });
@@ -718,9 +810,9 @@ function buildList() {
     const cfg = SECTOR_CONFIG[c.sector] || { label: c.sector, color: '#888' };
     const roles = `<a href="${escapeAttr(jobsUrl(c))}" target="_blank" rel="noopener noreferrer" class="co-link" onclick="event.stopPropagation()">Find roles &#8599;</a>`;
     return `<tr data-i="${i}">
-      <td><span class="list-name">${c.name}</span></td>
-      <td><span class="list-sector" style="color:${cfg.color}">${sectorIconSvg(c.sector)}<span class="list-sector-lbl">${cfg.label}</span></span></td>
-      <td>${c.city}</td>
+      <td><span class="list-name">${esc(c.name)}</span></td>
+      <td><span class="list-sector" style="color:${cfg.color}">${sectorIconSvg(c.sector)}<span class="list-sector-lbl">${esc(cfg.label)}</span></span></td>
+      <td>${esc(c.city)}</td>
       <td class="list-dist">${c.distKm} km</td>
       <td>${roles}</td>
     </tr>`;
@@ -748,6 +840,7 @@ function toggleList(show) {
   document.body.classList.toggle('list-active', listVisible);
   document.getElementById('list-toggle').classList.toggle('active', listVisible);
   if (listVisible) buildList();
+  syncUrl();
 }
 
 // Open the list without disturbing filters — unlike the grid, the list is a
@@ -799,6 +892,16 @@ legendCollapse.addEventListener('click', () => {
   legendCollapse.title = collapsed ? 'Show legend' : 'Hide legend';
 });
 
+// On a phone an open legend would cover a third of the map, so it starts as the
+// small info chip — but it *is* there. Hiding it outright (as the mobile CSS used
+// to) left eight colours and two marker shapes unexplained on exactly the devices
+// most people open a shared link on.
+if (window.matchMedia('(max-width: 640px)').matches) {
+  legend.classList.add('collapsed');
+  legendCollapse.setAttribute('aria-expanded', 'false');
+  legendCollapse.title = 'Show legend';
+}
+
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
 
@@ -829,9 +932,44 @@ document.getElementById('welcome-reopen').addEventListener('click', showWelcome)
 // Open fitted to Germany so the data fills the frame (world stays as backdrop)
 map.fitBounds(statesLayer.getBounds(), { padding: [30, 30] });
 
-// Read URL sector param
-const initParam = new URLSearchParams(window.location.search).get('s');
-if (initParam) {
-  initParam.split(',').forEach(s => { if (SECTOR_CONFIG[s]) activeSectors.add(s); });
+// Replay a shared link. Each param is applied through the same helper the UI
+// uses, so a restored view and a clicked-together one cannot drift apart.
+function readUrl() {
+  const p = new URLSearchParams(window.location.search);
+
+  (p.get('s') || '').split(',').forEach(s => { if (SECTOR_CONFIG[s]) activeSectors.add(s); });
+
+  const oi = UNIVERSITY_CITIES.findIndex(c => c.name === p.get('o'));
+  if (oi > 0) {
+    origin = UNIVERSITY_CITIES[oi];
+    originSelect.value = String(oi);
+    document.getElementById('bonn-filter').title = `Filter by distance from ${origin.name}`;
+    recomputeDistances();
+    bonnCircle.setLatLng([origin.lat, origin.lng]);
+  }
+
+  applyFilters();   // paints chips, markers and stats for the sector + origin state
+
+  // Distance and region are mutually exclusive spatial focuses — same rule the
+  // UI enforces — so at most one of them is restored.
+  const d = Number(p.get('d'));
+  const region = REGIONS.find(r => r.id === p.get('r'));
+  if (p.has('d') && Number.isFinite(d) && d >= Number(bonnRange.min) && d <= Number(bonnRange.max)) {
+    bonnRadiusKm = d;
+    bonnRange.value = String(d);
+    bonnKmLabel.textContent = `${d} km`;
+    bonnCircle.setRadius(d * 1000);
+    toggleBonnFilter();          // switches it on, flies to the circle, refreshes
+  } else if (region) {
+    openPanel(region);
+  }
+
+  const v = p.get('v');
+  if (v === 'list') toggleList(true);
+  else if (v === 'grid') toggleGrid(true);
+
+  booting = false;
+  syncUrl();   // normalise the link (drops unknown or malformed params)
 }
-applyFilters();
+
+readUrl();

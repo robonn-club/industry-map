@@ -4,6 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Germany Industry Map — Robonn</title>
+  <meta name="description" content="An open, interactive map of Germany's robotics, tech and research landscape — 245 companies and institutes across 8 sectors and 16 Bundesländer. Built by Robonn, the robotics club at the University of Bonn." />
+  <link rel="canonical" href="https://robonn-club.github.io/industry-map/" />
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/robonn_logo_128.png" />
+  <meta name="theme-color" content="#293740" />
+
+  <!-- Link preview (Discord, LinkedIn, Slack, WhatsApp) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Robonn" />
+  <meta property="og:title" content="Germany Industry Map — Robonn" />
+  <meta property="og:description" content="245 robotics, tech and research organisations across Germany, on one interactive map. Filter by sector, browse by Bundesland, find places to apply." />
+  <meta property="og:url" content="https://robonn-club.github.io/industry-map/" />
+  <meta property="og:image" content="https://robonn-club.github.io/industry-map/assets/og-cover.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Industry Map by Robonn — Germany's robotics, tech and research landscape" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Germany Industry Map — Robonn" />
+  <meta name="twitter:description" content="245 robotics, tech and research organisations across Germany, on one interactive map." />
+  <meta name="twitter:image" content="https://robonn-club.github.io/industry-map/assets/og-cover.png" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -16,7 +37,7 @@
   <div id="welcome-overlay" class="welcome-hidden">
     <div id="welcome-card">
       <div id="welcome-brand">
-        <img src="assets/robonn_logo_main_2.png" alt="Robonn" id="welcome-logo" />
+        <img src="assets/robonn_logo_128.png" alt="Robonn" id="welcome-logo" />
         <div>
           <div id="welcome-title"> Industry Map</div>
           <div id="welcome-sub">by Robonn </div>
@@ -36,7 +57,7 @@
   <header id="header">
     <div class="header-inner">
       <div class="header-brand">
-        <img src="assets/robonn_logo_main_2.png" alt="Robonn" class="brand-icon" />
+        <img src="assets/robonn_logo_128.png" alt="Robonn" class="brand-icon" />
         <div class="brand-text">
           <h1>Industry Map</h1>
           <span>Robotics &amp; Tech Companies</span>
@@ -76,6 +97,12 @@
       </svg>
     </button>
     <div id="filter-btns"></div>
+    <button id="filter-reset" type="button" title="Clear all filters" hidden>
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.7 2.2v3.2h-3.2"/>
+      </svg>
+      Reset
+    </button>
     <div class="filter-sep"></div>
     <div id="bonn-control">
       <button id="bonn-filter" title="Filter by distance from your city">

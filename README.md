@@ -11,11 +11,13 @@ companies and labs to connect with.
 
 - **245 companies and research institutes** across 8 sectors, plotted on a precise
   vector map of Germany and its 16 states.
-- **Multi-select sector filters**, a **Near Bonn** filter, and a **Sector Grid**
-  that compares all sectors at once.
+- **Multi-select sector filters** carrying live counts, a **distance filter** from any
+  of 25 university cities, and a **Sector Grid** that compares all sectors at once.
 - Click a state for a regional sector breakdown; click a point for details and a
   link to the organisation.
-- Filtered views are shareable by URL (e.g. `?s=robotics,ai_ml`).
+- **Every filter is in the URL**, so a link restores exactly what you were looking at —
+  sectors, Bundesland, origin city, radius and the open view
+  (e.g. `?s=robotics,ai_ml&r=bavaria&o=Munich&v=list`).
 
 ## Run locally
 
@@ -43,15 +45,31 @@ data/
     world.js            # legacy vector backdrop (no longer rendered)
     src/                # pristine sources the build reads from
 scripts/
+  validate.mjs          # checks company/institute data (CI gate on every PR)
+  check-links.mjs       # checks every `website` URL still resolves
+  geocode.mjs           # snaps coordinates to the real OSM building footprint
+  fetch-candidates.mjs  # drafts new entries from Wikidata for review
   build-geo.mjs         # regenerates the geo/*.js layers from src/
-  validate.mjs          # checks company/institute data
+  README.md             # what each script does and how they fit together
+.github/workflows/
+  validate.yml          # dataset + changed-link checks on every pull request
+  links.yml             # weekly sweep of all links -> one self-updating issue
 ```
 
 ## Map & boundaries
 
-The basemap is **CARTO Dark Matter** (OpenStreetMap data) raster tiles in Web Mercator — a precise,
-world-wide dark slippy map you can zoom from the globe down to a street. The coloured sector markers
-and an interactive **Bundesländer** overlay sit on top.
+The basemap is **Esri Dark Gray Canvas** raster tiles in Web Mercator — a world-wide dark canvas
+designed to sit *under* data, so the coloured sector markers and the interactive **Bundesländer**
+overlay carry the eye. It is keyless: no signup, no token in the repo.
+
+Esri serves geometry and labels as two layers, and has no imagery past **z16**, so the tile layers
+set `maxNativeZoom: 16` — Leaflet upscales that tile for the street-level zooms rather than
+requesting the "Map data not yet available" placeholder. The ground softens as you close in; the
+markers stay crisp vectors on the real HQ coordinate.
+
+> We were on CARTO Dark Matter until CARTO moved their basemap CDN behind an API key. Tiles from
+> `basemaps.cartocdn.com` are now stamped "API KEY REQUIRED" across the middle, so that host is
+> unusable unless the club registers a key.
 
 The `germany.js` / `bundeslaender.js` overlay layers are **generated**, not hand-edited. They come
 from the pristine GeoJSON in `data/geo/src/` via [mapshaper](https://github.com/mbloch/mapshaper):
@@ -72,8 +90,8 @@ Adding a company or institute takes one entry and no code — see
 
 ## Data & attribution
 
-- Basemap tiles: [CARTO](https://carto.com/attributions) Dark Matter, data ©
-  [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors
+- Basemap tiles: [Esri](https://www.esri.com/) Dark Gray Canvas — Esri, HERE, Garmin, ©
+  [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, and the GIS user community
 - Germany & state boundaries: [deutschlandGeoJSON](https://github.com/isellsoap/deutschlandGeoJSON)
   (data © GeoBasis-DE / BKG, [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0))
 - Map rendering: [Leaflet](https://leafletjs.com/)
