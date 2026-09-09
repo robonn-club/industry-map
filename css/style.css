@@ -179,8 +179,35 @@ body {
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
+  /* Fade the right edge so it reads as "more sectors this way" — the scrollbar
+     is hidden, so without this the overflow is invisible (mostly on mobile). */
+  mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent 100%);
 }
 #filter-btns::-webkit-scrollbar { display: none; }
+
+/* Clears every active filter — sector, region and distance. Hidden while the
+   map is unfiltered, so it only appears when there is something to undo. */
+#filter-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 4px 11px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-2);
+  font-family: var(--f);
+  transition: all 0.13s;
+  white-space: nowrap;
+  line-height: 1;
+}
+#filter-reset:hover { border-color: var(--accent); color: var(--brand); }
+#filter-reset[hidden] { display: none; }
 
 .filter-btn {
   display: inline-flex;
@@ -229,8 +256,27 @@ body {
 }
 .filter-btn.active .chip-icon { color: #fff; }   /* white on the coloured active chip */
 
-/* Sectors with nothing in range (e.g. under Near Bonn) are hidden */
-.filter-btn.chip-hidden { display: none; }
+/* Live count of what the chip would show under the other active filters. Sits
+   on every chip so you can see where the data is *before* clicking. */
+.chip-count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 0.68rem;
+  opacity: 0.65;
+  margin-left: 1px;
+  /* Reserve room for the widest count (245) and right-align inside it. Without
+     this the chip narrows as its number shrinks (83 -> 8) and every chip to the
+     right slides — the same reflow that hiding chips used to cause. */
+  min-width: 3ch;
+  text-align: right;
+}
+
+/* Sectors with nothing in range (e.g. under Near Bonn) dim in place rather than
+   disappearing — the bar must never reflow under the user's cursor. */
+.filter-btn.chip-empty {
+  opacity: 0.34;
+  pointer-events: none;
+}
 
 .filter-sep {
   width: 1px;
@@ -391,9 +437,33 @@ body.grid-active .leaflet-control {
 }
 .leaflet-control-attribution a { color: rgba(200,212,222,0.85) !important; }
 
-/* No black focus box when a state path is clicked */
-.leaflet-interactive:focus { outline: none; }
-path.leaflet-interactive { outline: none; }
+/* No black focus box when a state path is clicked with the mouse — but keyboard
+   users keep a real ring (:focus-visible below). */
+.leaflet-interactive:focus:not(:focus-visible) { outline: none; }
+path.leaflet-interactive:focus:not(:focus-visible) { outline: none; }
+
+/* Visible keyboard focus across every interactive control. */
+.filter-btn:focus-visible,
+#filter-reset:focus-visible,
+#grid-toggle:focus-visible,
+#list-toggle:focus-visible,
+#bonn-filter:focus-visible,
+#legend-collapse:focus-visible,
+#welcome-reopen:focus-visible,
+#panel-close:focus-visible,
+#grid-close:focus-visible,
+#list-close:focus-visible,
+#list-search:focus-visible,
+#origin-city:focus-visible,
+.conn-tag:focus-visible,
+.mini-card:focus-visible,
+.list-table tbody tr:focus-visible,
+.list-table th[data-key]:focus-visible,
+.leaflet-interactive:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r);
+}
 
 /* ── Region panel ───────────────────────────────────────────────────────── */
 
@@ -1141,7 +1211,16 @@ path.leaflet-interactive { outline: none; }
   .filter-btn { padding: 4px 9px; font-size: 0.71rem; }
   .filter-sep { display: none; }
 
-  #legend { display: none; }
+  /* The legend is the only place the colour/shape encoding is explained, so it
+     must survive on phones. It starts collapsed (see app.js) as a small info
+     chip and expands to a compact panel on tap. */
+  #legend { bottom: 14px; right: 12px; padding: 7px 9px; min-width: 116px; }
+  /* The region panel is a bottom sheet here, so lift the legend clear of it
+     instead of nudging it sideways as on desktop. */
+  #legend.shifted { right: 12px; bottom: calc(62vh + 12px); }
+  .legend-heading { font-size: 0.54rem; margin-bottom: 6px; }
+  .leg-row { font-size: 0.67rem; margin-bottom: 3px; }
+  #legend .legend-heading:not(:first-child) { margin-top: 10px; }
 
   #region-panel {
     position: fixed !important;
@@ -1164,6 +1243,5 @@ path.leaflet-interactive { outline: none; }
     min-width: 0 !important;
   }
 
-  #legend.shifted { right: 20px; }
   #welcome-card { padding: 22px 18px; }
 }

@@ -4,7 +4,8 @@
 //
 // Pulls German-HQ'd companies per sector from Wikidata, fills the boring fields
 // (founding year, website, coordinates, employee count → size), dedupes against
-// data/companies.js + data/_candidates.js, and writes data/_candidates.generated.js
+// data/companies/*.js + data/institutes.js + data/_candidates.js, and writes
+// data/_candidates.generated.js
 // for human review. The machine does the lookup grind; you keep the quality gate:
 // verify HQ is really in Germany, fix the sector if mis-bucketed, and WRITE THE
 // ONE-SENTENCE DESCRIPTION (Wikidata's is only a rough hint).
@@ -56,14 +57,40 @@ const sizeFromEmployees = (n) =>
   n == null ? "" : n < 100 ? "startup" : n < 1000 ? "mid" : n < 5000 ? "big" : "global";
 
 // Names already on the map or already staged — never re-emit these.
+//
+// The company dataset was split by size (data/companies/{global,big,mid,startup}.js)
+// and data/companies.js no longer exists. This list must stay in step with the
+// `sources` array in scripts/validate.mjs: read the wrong paths and the catch
+// below swallows it silently, leaving every company already on the map looking
+// brand new and re-emitted as a candidate.
+const EXISTING_SOURCES = [
+  ["data/companies/global.js", "COMPANIES_GLOBAL"],
+  ["data/companies/big.js", "COMPANIES_BIG"],
+  ["data/companies/mid.js", "COMPANIES_MID"],
+  ["data/companies/startup.js", "COMPANIES_STARTUP"],
+  ["data/institutes.js", "INSTITUTES"],
+  ["data/_candidates.js", "CANDIDATES"],
+  ["data/_candidates.generated.js", "CANDIDATES_GENERATED"],
+];
+
 function loadExistingNames() {
   const names = new Set();
-  for (const [file, varName] of [["data/companies.js", "COMPANIES"], ["data/institutes.js", "INSTITUTES"], ["data/_candidates.js", "CANDIDATES"]]) {
+  let loaded = 0;
+  for (const [file, varName] of EXISTING_SOURCES) {
     try {
       const src = readFileSync(join(ROOT, file), "utf8");
       const arr = new Function(`${src};return typeof ${varName}!=="undefined"?${varName}:[];`)();
       for (const e of arr) if (e?.name) names.add(e.name.toLowerCase());
-    } catch { /* file may not exist yet */ }
+      if (arr.length) loaded++;
+    } catch { /* _candidates files may legitimately not exist yet */ }
+  }
+  // The data files are not optional. If none of them loaded, the dedupe set is
+  // empty and every existing entry would come back as a candidate — fail loudly
+  // instead of generating hundreds of duplicates.
+  if (!loaded) {
+    console.error("✗ could not load any existing dataset file — refusing to run without a dedupe set.");
+    console.error("  Check the paths in EXISTING_SOURCES against scripts/validate.mjs.");
+    process.exit(2);
   }
   return names;
 }
@@ -230,7 +257,7 @@ function writeOutput(bySector) {
     "// MACHINE-GENERATED candidate entries from Wikidata — NOT loaded by index.html.",
     "// Regenerate with: node scripts/fetch-candidates.mjs",
     "//",
-    "// REVIEW EACH before merging into data/companies.js:",
+    "// REVIEW EACH before merging into the right data/companies/<size>.js:",
     "//  • confirm the company is really headquartered in Germany,",
     "//  • fix the sector if mis-bucketed (the trailing comment shows Wikidata's QID),",
     "//  • REWRITE the description into one factual sentence (drafts are rough),",

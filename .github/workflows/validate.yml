@@ -1,0 +1,49 @@
+# Gate on every pull request that touches the dataset or the scripts around it.
+#
+# scripts/validate.mjs has always been a good validator; until now nothing ran
+# it, so data quality depended on a reviewer remembering. This is the gate.
+name: validate
+
+on:
+  pull_request:
+    paths:
+      - 'data/**'
+      - 'scripts/**'
+      - '.github/workflows/validate.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/**'
+      - 'scripts/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    # The dataset check is instant; the bound is for the link step, which talks
+    # to a few hundred third-party hosts and must never hang a PR.
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # check-links --changed diffs against the base branch, so it needs
+          # more than the default single-commit shallow clone.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # No network, fast, and a hard failure: duplicate names, bad state or
+      # sector codes, coordinates outside Germany, missing required fields.
+      - name: Validate dataset
+        run: node scripts/validate.mjs
+
+      # Only the URLs this PR actually added or changed, so a one-company PR
+      # costs one request instead of 245. Fails only on a definitive 404/410/451
+      # or a domain that does not resolve — never on a timeout or a bot-block.
+      - name: Check links added or changed by this PR
+        run: node scripts/check-links.mjs --changed --base origin/${{ github.base_ref || 'main' }}

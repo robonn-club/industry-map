@@ -135,14 +135,14 @@ const COMPANIES_BIG = [
     lat: 48.195362, lng: 11.471953,
     sector: "defense", size: "big", founded: 1873,
     description: "Land-defense systems including the Leopard 2 main battle tank (KMW).",
-    website: "https://www.knds.de"
+    website: "https://knds.com"
   },
   {
     name: "Lürssen", city: "Bremen", state: "bremen",
     lat: 53.167834, lng: 8.653924,
     sector: "defense", size: "big", founded: 1875,
     description: "Shipbuilder of naval vessels and large custom yachts.",
-    website: "https://www.luerssen.de"
+    website: "https://www.lurssen.com"
   },
 
   // ── AGRICULTURE ───────────────────────────────────────────────────────────
@@ -249,6 +249,6 @@ const COMPANIES_BIG = [
     address: "Agathe-Heim-Straße, 78727, Oberndorf am Neckar",
     sector: "defense", size: "big", founded: 1949,
     description: "Maker of small arms and service rifles supplying the Bundeswehr and NATO armed forces.",
-    website: "https://www.heckler-koch.com"
+    website: "https://www.heckler-koch.com/en/"
   },
 ];

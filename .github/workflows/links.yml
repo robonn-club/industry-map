@@ -1,0 +1,88 @@
+# Weekly sweep of every website URL on the map.
+#
+# Deliberately does NOT fail the build. A red X on a cron job nobody is watching
+# gets ignored within a month; a single issue that rewrites itself each week —
+# and closes itself when the list empties — stays readable and actionable.
+name: links
+
+on:
+  schedule:
+    # Mondays 06:17 UTC. Off the hour: scheduled jobs on the hour are the most
+    # contended slots on GitHub's runners and get delayed the most.
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # `|| true` because a dead link must not fail the workflow — the report is
+      # the deliverable, and the next step turns it into an issue.
+      - name: Check every link
+        run: node scripts/check-links.mjs --json > links.json || true
+
+      - name: Open or update the tracking issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('links.json', 'utf8'));
+            const TITLE = 'Dead links on the map';
+            const { owner, repo } = context.repo;
+
+            const open = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: 'open', labels: 'link-rot', per_page: 100,
+            });
+            const existing = open.find(i => i.title === TITLE);
+
+            if (!report.dead.length) {
+              core.info(`No dead links (${report.ok}/${report.checked} ok).`);
+              if (existing) {
+                await github.rest.issues.createComment({
+                  owner, repo, issue_number: existing.number,
+                  body: 'All links resolve again as of the latest sweep — closing.',
+                });
+                await github.rest.issues.update({ owner, repo, issue_number: existing.number, state: 'closed' });
+              }
+              return;
+            }
+
+            const rows = report.dead
+              .map(d => `| ${d.name} | ${d.status || d.detail} | ${d.url} | \`${d.file}\` |`)
+              .join('\n');
+            const body = [
+              `${report.dead.length} entr${report.dead.length === 1 ? 'y' : 'ies'} point at a URL that no longer exists.`,
+              '',
+              'Only definitive failures are listed — a `404`/`410`/`451`, or a domain that does not',
+              'resolve. Timeouts and bot-blocks are excluded on purpose, so everything below is',
+              'worth acting on.',
+              '',
+              '| Entry | Status | URL | File |',
+              '|---|---|---|---|',
+              rows,
+              '',
+              `<sub>${report.ok}/${report.checked} links OK · ${report.moved.length} moved`
+                + ` · ${report.unverifiable.length} unverifiable · ${report.unreachable.length} unreachable`
+                + ` · updated by [\`links.yml\`](../actions/workflows/links.yml)`
+                + ` on ${new Date().toISOString().slice(0, 10)}</sub>`,
+            ].join('\n');
+
+            if (existing) {
+              await github.rest.issues.update({ owner, repo, issue_number: existing.number, body });
+              core.info(`Updated issue #${existing.number}.`);
+            } else {
+              const { data } = await github.rest.issues.create({
+                owner, repo, title: TITLE, body, labels: ['link-rot'],
+              });
+              core.info(`Opened issue #${data.number}.`);
+            }
