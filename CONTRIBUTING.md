@@ -36,7 +36,9 @@ Same fields, in [`data/institutes.js`](data/institutes.js). Always use
 
 ## Guidelines
 
-- **Real, verifiable companies only** — include the official `website`.
+- **Real, verifiable companies only** — include the official `website`, and make it
+  the organisation's own domain (not a LinkedIn or Crunchbase page). The link is
+  what the map is for, and it gets checked automatically.
 - **No duplicates** — search the file first.
 - Keep descriptions to **one sentence**.
 - Place the entry under the matching sector comment to keep the file tidy.
@@ -58,8 +60,17 @@ dissolve (one shared topology), so the borders always match. Edit `data/geo/src/
 
 1. Fork the repo and create a branch.
 2. Add your entry (open `index.html` locally to check it appears).
-3. If you touched data, run `node scripts/validate.mjs` (and `npm run build:geo` for boundaries).
+3. If you touched data, run the checks:
+   ```bash
+   node scripts/validate.mjs              # fields, codes, duplicates, coordinates
+   node scripts/check-links.mjs --changed # the URLs you added actually resolve
+   npm run build:geo                      # only if you touched data/geo/src/
+   ```
 4. Open a pull request describing what you added.
+
+CI runs the first two on every pull request, so a broken entry or a dead link is
+caught before review. A separate weekly job sweeps every link on the map and
+collects the dead ones into a single issue — see [scripts/README.md](scripts/README.md).
 
 ## Recognition
 

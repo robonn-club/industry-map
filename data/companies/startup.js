@@ -35,7 +35,7 @@ const COMPANIES_STARTUP = [
     address: "Augustenstraße 12, 80333, München",
     sector: "robotics", size: "startup", founded: 2020,
     description: "Modular, reconfigurable industrial robots designed to automate small and mid-sized manufacturers.",
-    website: "https://www.robco.de"
+    website: "https://www.rob.co"
   },
   {
     name: "Sereact", city: "Stuttgart", state: "bw",
@@ -93,7 +93,7 @@ const COMPANIES_STARTUP = [
     address: "Ingeborg-Krummer-Schroth-Straße 18, 79106, Freiburg im Breisgau",
     sector: "ai_ml", size: "startup", founded: 2024,
     description: "Creators of the FLUX open-weight image-generation models, founded by ex-Stability researchers.",
-    website: "https://blackforestlabs.ai"
+    website: "https://bfl.ai"
   },
   {
     name: "deepset", city: "Berlin", state: "berlin",

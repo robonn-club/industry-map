@@ -646,7 +646,7 @@ const INSTITUTES = [
     address: "Schloßwall, 49074, Osnabrück",
     sector: "research", size: "mid", founded: 2001,
     description: "Interdisciplinary institute bridging AI, neuroscience, and cognition — one of Germany's first such programs.",
-    website: "https://www.ikw.uni-osnabrueck.de"
+    website: "https://www.uni-osnabrueck.de/fb8/ikw"
   },
   {
     name: "Uni Ulm — Measurement, Control & Microtechnology", city: "Ulm", state: "bw",
