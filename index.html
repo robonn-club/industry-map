@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Germany Industry Map — Robonn</title>
-  <meta name="description" content="An open, interactive map of Germany's robotics, tech and research landscape — 245 companies and institutes across 8 sectors and 16 Bundesländer. Built by Robonn, the robotics club at the University of Bonn." />
+  <meta name="description" content="An open, interactive map of Germany's robotics, tech and research landscape — 162 companies and 83 university labs and research institutes across 7 sectors and 16 Bundesländer. Built by Robonn, the robotics club at the University of Bonn." />
   <link rel="canonical" href="https://robonn-club.github.io/industry-map/" />
   <link rel="icon" type="image/png" href="assets/favicon.png" />
   <link rel="apple-touch-icon" href="assets/robonn_logo_128.png" />
@@ -14,7 +14,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Robonn" />
   <meta property="og:title" content="Germany Industry Map — Robonn" />
-  <meta property="og:description" content="245 robotics, tech and research organisations across Germany, on one interactive map. Filter by sector, browse by Bundesland, find places to apply." />
+  <meta property="og:description" content="162 companies and 83 research labs across Germany, on one interactive map. Search by name, filter by sector, and find labs to write a thesis at." />
   <meta property="og:url" content="https://robonn-club.github.io/industry-map/" />
   <meta property="og:image" content="https://robonn-club.github.io/industry-map/assets/og-cover.png" />
   <meta property="og:image:width" content="1200" />
@@ -22,7 +22,7 @@
   <meta property="og:image:alt" content="Industry Map by Robonn — Germany's robotics, tech and research landscape" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Germany Industry Map — Robonn" />
-  <meta name="twitter:description" content="245 robotics, tech and research organisations across Germany, on one interactive map." />
+  <meta name="twitter:description" content="162 companies and 83 research labs across Germany, on one interactive map." />
   <meta name="twitter:image" content="https://robonn-club.github.io/industry-map/assets/og-cover.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,8 +45,13 @@
       </div>
 
       <p id="welcome-desc">
-        An open map of Germany's robotics, tech, and industrial company headquarters
-        and research labs.
+        An open map of Germany's robotics and tech landscape — <strong>162 companies</strong>
+        and <strong>83 university labs and research institutes</strong>, each one checked by
+        hand. Search by name, filter to the labs, and find somewhere to write a thesis.
+      </p>
+      <p id="welcome-note">
+        A curated sample, not a census: entries are added and verified one at a time, so
+        coverage is thinner in some states than others.
       </p>
 
       <button id="welcome-cta">Explore the map &rarr;</button>
@@ -65,6 +70,20 @@
       </div>
 
       <div class="header-right">
+        <!-- Global search. A student who has heard of a lab needs to find it by
+             name, not hunt for a dot; results ignore the active filters, because
+             hiding what someone explicitly asked for is never the right answer. -->
+        <div id="search-box">
+          <svg id="search-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true">
+            <circle cx="7" cy="7" r="4.6"/><line x1="10.5" y1="10.5" x2="14.5" y2="14.5"/>
+          </svg>
+          <input id="search-input" type="search" autocomplete="off" spellcheck="false"
+                 placeholder="Search companies, labs, cities…"
+                 aria-label="Search companies, labs and cities"
+                 role="combobox" aria-expanded="false" aria-controls="search-results" />
+          <ul id="search-results" role="listbox" hidden></ul>
+        </div>
+
         <div class="header-stats">
           <div class="stat-box">
             <span id="count-visible" class="stat-num">—</span>
@@ -83,7 +102,6 @@
 
   <!-- ── Filter bar ──────────────────────────────────────────────────────── -->
   <nav id="filter-bar">
-    <span class="filter-label">Sector</span>
     <button id="grid-toggle" title="View companies by sector">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <rect x="1" y="1" width="6" height="6" rx="1.2"/><rect x="9" y="1" width="6" height="6" rx="1.2"/>
@@ -96,7 +114,25 @@
         <circle cx="1.6" cy="3" r="1" fill="currentColor" stroke="none"/><circle cx="1.6" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="1.6" cy="13" r="1" fill="currentColor" stroke="none"/>
       </svg>
     </button>
+    <div class="filter-sep"></div>
+    <span class="filter-label">Type</span>
+    <!-- Company vs institute is its own axis now that institutes carry a real
+         sector. Same model as the sector chips: nothing selected means "both". -->
+    <div id="type-btns">
+      <button class="type-btn" data-type="company" type="button" title="Show companies">
+        <svg class="type-mark" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="currentColor"/></svg>
+        Companies<span class="chip-count"></span>
+      </button>
+      <button class="type-btn" data-type="institute" type="button" title="Show research institutes and university labs">
+        <svg class="type-mark" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+        Labs<span class="chip-count"></span>
+      </button>
+    </div>
+
+    <div class="filter-sep"></div>
+    <span class="filter-label">Sector</span>
     <div id="filter-btns"></div>
+
     <button id="filter-reset" type="button" title="Clear all filters" hidden>
       <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.7 2.2v3.2h-3.2"/>

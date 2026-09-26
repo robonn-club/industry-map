@@ -9,15 +9,27 @@ companies and labs to connect with.
 
 ## What it shows
 
-- **245 companies and research institutes** across 8 sectors, plotted on a precise
-  vector map of Germany and its 16 states.
-- **Multi-select sector filters** carrying live counts, a **distance filter** from any
-  of 25 university cities, and a **Sector Grid** that compares all sectors at once.
-- Click a state for a regional sector breakdown; click a point for details and a
-  link to the organisation.
+- **162 companies and 83 university labs / research institutes** across 7 sectors,
+  plotted on a precise vector map of Germany and its 16 states.
+- **Search** (press `/`) over names, cities, sectors and descriptions — typing
+  `slam` finds the labs that do SLAM. Results ignore the active filters and fly
+  straight to the hit.
+- **Type filter** — companies, labs, or both. **Multi-select sector filters** with
+  live counts, a **distance filter** from any of 25 university cities, and a
+  **Sector Grid** comparing all sectors at once.
+- Click a state for a regional sector breakdown; click a point for details, the
+  organisation's site, and a roles link (thesis / HiWi search for labs).
 - **Every filter is in the URL**, so a link restores exactly what you were looking at —
-  sectors, Bundesland, origin city, radius and the open view
-  (e.g. `?s=robotics,ai_ml&r=bavaria&o=Munich&v=list`).
+  sectors, type, Bundesland, origin city, radius and the open view
+  (e.g. `?s=robotics&t=institute&r=bavaria&o=Munich&v=list`).
+
+### Sectors are domains, not categories of organisation
+
+An institute carries the domain it works in — robotics, AI & ML, … — exactly like a
+company, and *being* an institute is the separate **Type** axis. Institutes used to
+all sit in a `research` sector, which meant filtering for **Robotics** returned 28
+companies and hid DLR, Fraunhofer IPA, DFKI and both Bonn labs. Robotics now returns
+**65**, of which 37 are labs.
 
 ## Run locally
 

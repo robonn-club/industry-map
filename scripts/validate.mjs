@@ -19,8 +19,12 @@ const staged = process.argv.includes("--staged");
 const STATES = new Set(["bw", "bavaria", "berlin", "brandenburg", "bremen", "hamburg",
   "hesse", "mv", "lower_saxony", "nrw", "rhineland_palatinate", "saarland", "saxony",
   "saxony_anhalt", "schleswig_holstein", "thuringia"]);
+// "research" is deliberately absent: it described what an entry *is*, not what it
+// works on, so it collapsed a third of the dataset into one bucket and hid every
+// major robotics lab behind a filter no robotics student would click. Institutes
+// now carry a real domain; company-vs-institute is the separate Type axis.
 const SECTORS = new Set(["robotics", "automotive", "ai_ml", "industrial", "software",
-  "research", "defense", "agriculture"]);
+  "defense", "agriculture"]);
 const SIZES = new Set(["startup", "mid", "big", "global"]);
 const REQUIRED = ["name", "city", "state", "lat", "lng", "sector", "size", "founded", "description", "website"];
 

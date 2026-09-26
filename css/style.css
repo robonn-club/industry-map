@@ -79,7 +79,7 @@ body {
   display: flex;
   align-items: center;
   gap: 14px;
-  flex-shrink: 0;
+  min-width: 0;          /* lets the search box shrink instead of pushing "?" off-screen */
 }
 
 /* Sector Grid toggle — icon button in the filter bar (next to the Sector label) */
@@ -145,6 +145,82 @@ body {
 .stat-lbl { font-size: 0.66rem; color: var(--text-3); }
 .stat-sep { font-size: 0.8rem; color: var(--text-3); }
 
+#welcome-note {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
+/* ── Header search ──────────────────────────────────────────────────────── */
+
+#search-box { position: relative; display: flex; align-items: center; min-width: 0; }
+
+#search-icon {
+  position: absolute;
+  left: 9px;
+  color: rgba(223,233,240,0.5);
+  pointer-events: none;
+}
+
+#search-input {
+  width: 232px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 6px 10px 6px 28px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(193,206,217,0.22);
+  background: rgba(255,255,255,0.07);
+  color: #EDF2F5;
+  font-family: var(--f);
+  font-size: 0.78rem;
+  transition: border-color 0.13s, background 0.13s, width 0.16s;
+}
+#search-input::placeholder { color: rgba(223,233,240,0.45); }
+#search-input:focus {
+  outline: none;
+  border-color: rgba(223,233,240,0.55);
+  background: rgba(255,255,255,0.12);
+  width: 272px;
+}
+/* The native "x" is invisible on the dark header, so hide it and let Escape clear. */
+#search-input::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+#search-results {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 0;
+  right: 0;
+  max-height: 340px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: 0 6px 24px rgba(41,55,64,0.22);
+  list-style: none;
+  z-index: 1300;
+  padding: 4px;
+}
+
+.sr-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.76rem;
+  color: var(--text);
+}
+.sr-item[aria-selected="true"], .sr-item:hover { background: var(--surface); }
+.sr-name { font-weight: 700; color: var(--brand); }
+.sr-meta { color: var(--text-3); margin-left: auto; white-space: nowrap; font-size: 0.7rem; }
+.sr-item .sector-icon { font-size: 14px; flex-shrink: 0; }
+/* Hollow ring marks a lab, matching the map and the Type chips. */
+.sr-ring { width: 9px; height: 9px; border-radius: 50%; border: 1.6px solid currentColor; flex-shrink: 0; }
+.sr-disc { width: 9px; height: 9px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.sr-empty { padding: 12px 10px; color: var(--text-3); font-style: italic; font-size: 0.76rem; }
+
 /* ── Filter bar ─────────────────────────────────────────────────────────── */
 
 #filter-bar {
@@ -185,6 +261,36 @@ body {
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent 100%);
 }
 #filter-btns::-webkit-scrollbar { display: none; }
+
+/* Type chips — company vs institute. Visually quieter than the sector chips so
+   the colour axis stays dominant, and each carries the same mark the map uses:
+   a filled disc for a company, a hollow ring for a lab. */
+#type-btns { display: flex; gap: 5px; flex-shrink: 0; }
+
+.type-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-2);
+  font-family: var(--f);
+  transition: all 0.13s;
+  white-space: nowrap;
+  line-height: 1;
+}
+.type-btn:hover { border-color: var(--accent); color: var(--brand); }
+.type-btn.active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+.type-mark { flex-shrink: 0; display: block; }
 
 /* Clears every active filter — sector, region and distance. Hidden while the
    map is unfiltered, so it only appears when there is something to undo. */
@@ -1198,6 +1304,13 @@ path.leaflet-interactive:focus:not(:focus-visible) { outline: none; }
 .list-sector-lbl { color: var(--text); }   /* keep label ink-coloured; icon stays sector-coloured */
 .list-dist { font-variant-numeric: tabular-nums; }
 
+/* Between mobile and a wide desktop the bar carries two chip groups plus their
+   labels and does not fit; the group labels are the cheapest thing to drop,
+   since the chips are self-describing. */
+@media (max-width: 1380px) {
+  .filter-label { display: none; }
+}
+
 /* ── Mobile ──────────────────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
@@ -1206,7 +1319,33 @@ path.leaflet-interactive:focus:not(:focus-visible) { outline: none; }
   .header-stats { display: none; }
   .btn-text { display: none; }
 
-  #filter-bar { padding: 0 10px; gap: 5px; }
+  /* The whole bar scrolls as one strip: Type + Sector no longer fit side by side
+     at this width, and a clipped sector chip is a control the user cannot reach.
+     #bonn-popover is position:fixed, so it is not clipped by this scroll box. */
+  #filter-bar {
+    padding: 0 10px;
+    gap: 5px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  #filter-bar::-webkit-scrollbar { display: none; }
+
+  /* Natural width inside the scrolling bar, and no inner mask — the bar itself
+     is what scrolls now, so an inner fade would cut chips mid-strip. */
+  #filter-btns {
+    flex: 0 0 auto;
+    overflow: visible;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  .type-btn { padding: 4px 8px; font-size: 0.68rem; }
+
+  /* Leave room for the "?" button next to it. */
+  #search-input { width: 168px; font-size: 0.74rem; }
+  #search-input:focus { width: 188px; }
   .filter-label { display: none; }
   .filter-btn { padding: 4px 9px; font-size: 0.71rem; }
   .filter-sep { display: none; }

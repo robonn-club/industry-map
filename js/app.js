@@ -7,6 +7,11 @@
 // stroked with currentColor (fill none) so it inherits the surrounding text/glyph
 // colour. Rendered everywhere sector appears via sectorIconSvg(), so the eight
 // hard-to-distinguish colours are no longer the only cue — engineers scan by glyph.
+// Sectors are DOMAINS — what an organisation works on. There is deliberately no
+// "research" sector: that described what an entry *is*, not what it does, and it
+// swallowed a third of the dataset, so "Robotics" showed 28 companies while DLR,
+// Fraunhofer IPA, DFKI and both Bonn labs sat invisible behind a chip no robotics
+// student would ever click. Company-vs-institute is the separate Type axis.
 const SECTOR_CONFIG = {
   robotics:    { label: 'Robotics',            color: '#35707F', // brand teal
     icon: '<rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 8V4M9 4h6"/><circle cx="9.5" cy="13" r="1.1"/><circle cx="14.5" cy="13" r="1.1"/>' },
@@ -18,8 +23,6 @@ const SECTOR_CONFIG = {
     icon: '<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3.5M12 18v3.5M2.5 12h3.5M18 12h3.5M5.2 5.2l2.5 2.5M16.3 16.3l2.5 2.5M18.8 5.2l-2.5 2.5M7.7 16.3l-2.5 2.5"/>' },
   software:    { label: 'Software & Tech',     color: '#6F9966', // sage green
     icon: '<path d="M9 8l-4 4 4 4M15 8l4 4-4 4M13.5 6.5l-3 11"/>' },
-  research:    { label: 'Research',            color: '#BE9A45', // ochre
-    icon: '<path d="M9.5 3h5M10.5 3v6l-5 9a1 1 0 0 0 .9 1.5h11.2a1 1 0 0 0 .9-1.5l-5-9V3"/><path d="M7.5 15h9"/>' },
   defense:     { label: 'Aerospace & Defense', color: '#A85550', // brick red
     icon: '<path d="M21 3L3 11l6 2 2 6 3-5.5 4-10.5z"/><path d="M9 13l5.5-5"/>' },
   agriculture: { label: 'Agriculture',         color: '#8B9A4E', // olive
@@ -46,6 +49,12 @@ const SIZE_RANGE  = Object.fromEntries(SIZE_CONFIG.map(s => [s.key, s.range]));
 const BONN = [50.7374, 7.0982];
 let bonnRadiusKm = 100;   // adjustable via the distance slider
 const COMPANY_RADIUS = 6.5;   // uniform — sector (colour) is the encoding, size shown in popup
+
+// Institute markers are hollow rings, which read much lighter than a filled disc
+// of the same radius, so they carry a size floor and extra ink to stay findable.
+const INSTITUTE_MIN_R = 5;
+const INST_WEIGHT = 2.2;
+const INST_FILL = 0.38;
 
 // Distance origin — defaults to Bonn (Robonn's home) but any student can pick
 // their own university city, so "near me" works wherever they study. The list
@@ -80,7 +89,9 @@ const UNIVERSITY_CITIES = [
 let origin = UNIVERSITY_CITIES[0];   // mutable: the active "near me" centre
 
 // Companies and research institutes are kept in separate data files but share
-// one schema (institutes are sector "research"). Everything on the map works
+// one schema, including `sector` — an institute carries the domain it works in,
+// the same as a company, and the file it came from is what marks it an institute
+// (surfaced as `isInstitute` and the Type filter). Everything on the map works
 // off this merged list.
 const ENTITIES = [
   ...COMPANIES,
@@ -121,6 +132,11 @@ function jobsUrl(c) {
     + encodeURIComponent(c.name) + '&location=Germany';
 }
 
+// Name the roles link for what it actually opens. For a lab that is a search for
+// thesis / HiWi / PhD openings — the door a student actually walks through —
+// so calling both "Find roles" hid the more useful half.
+const jobsLabel = (c) => (isStudentFriendly(c) ? 'Thesis &amp; HiWi roles' : 'Find roles');
+
 const escapeAttr = s => String(s).replace(/"/g, '&quot;');
 
 // Contributor-supplied strings (name, city, description, region prose) are
@@ -138,7 +154,7 @@ function popupHtml(c) {
     ? `<a href="${escapeAttr(c.website)}" target="_blank" rel="noopener noreferrer" class="co-link">Visit website &rarr;</a>`
     : '';
   const jobsHtml =
-    `<a href="${escapeAttr(jobsUrl(c))}" target="_blank" rel="noopener noreferrer" class="co-link co-jobs">Find roles &#8599;</a>`;
+    `<a href="${escapeAttr(jobsUrl(c))}" target="_blank" rel="noopener noreferrer" class="co-link co-jobs">${jobsLabel(c)} &#8599;</a>`;
   return `
     <div class="co-popup">
       <div class="co-head">
@@ -146,7 +162,8 @@ function popupHtml(c) {
         <span class="co-badge" style="background:${cfg.color}">${sectorIconSvg(c.sector, 'sector-icon badge-icon')}${cfg.label}</span>
       </div>
       <div class="co-meta">
-        ${esc(c.city)} &middot; ${esc(SIZE_RANGE[c.size] ?? c.size)}
+        ${esc(c.city)} &middot; ${c.isInstitute ? 'Research lab' : 'Company'}
+        &middot; ${esc(SIZE_RANGE[c.size] ?? c.size)} staff
         <span class="co-dist">${c.distKm} km from ${esc(origin.name)}</span>
       </div>
       <p class="co-desc">${esc(c.description)}</p>
@@ -267,6 +284,10 @@ const bonnCircle = L.circle(BONN, {
 // An empty set means "All". Selecting sectors shows only those; "All" clears.
 
 const activeSectors = new Set();
+// Empty means "both", mirroring the sector chips.
+const activeTypes = new Set();
+
+const typeOf = (c) => (c.isInstitute ? 'institute' : 'company');
 
 const allFilters = [
   ['all', 'All', '#64748b'],
@@ -304,6 +325,31 @@ allFilters.forEach(([sector, label, color]) => {
   document.getElementById('filter-btns').appendChild(btn);
 });
 
+document.querySelectorAll('#type-btns .type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const t = btn.dataset.type;
+    activeTypes.has(t) ? activeTypes.delete(t) : activeTypes.add(t);
+    applyFilters();
+  });
+});
+
+// When the sector strip overflows, clicking a partly-visible chip makes the
+// browser scroll it into view — sliding the whole row ~127 px out from under the
+// cursor, so the chip you just clicked is no longer where you clicked it.
+//
+// That scroll lands after the click handler returns, so restoring scrollLeft in
+// applyFilters() is too early to help. Suppress the implicit focus that causes
+// it instead, then focus deliberately with preventScroll so keyboard users still
+// get a focus ring. Tab-focus is untouched and still scrolls, which is what a
+// keyboard user actually wants.
+let stripScrollBeforeClick = null;
+document.getElementById('filter-btns').addEventListener('mousedown', e => {
+  const btn = e.target.closest('.filter-btn');
+  if (!btn) return;
+  e.preventDefault();
+  btn.focus({ preventScroll: true });
+}, true);
+
 // ── Reset ─────────────────────────────────────────────────────────────────────
 // "All" only clears sectors, so a user who has drilled into a Bundesland and a
 // 50 km radius has no single way back. This is it — one control that clears
@@ -312,11 +358,12 @@ allFilters.forEach(([sector, label, color]) => {
 const resetBtn = document.getElementById('filter-reset');
 
 function anyFilterActive() {
-  return activeSectors.size > 0 || !!selectedRegion || bonnFilterActive;
+  return activeSectors.size > 0 || activeTypes.size > 0 || !!selectedRegion || bonnFilterActive;
 }
 
 resetBtn.addEventListener('click', () => {
   activeSectors.clear();
+  activeTypes.clear();
   closePanel();       // clears selectedRegion
   deactivateBonn();   // clears the distance filter (leaves the repaint to us)
   applyFilters();
@@ -330,12 +377,15 @@ function passesOrigin(c) {
 function passesRegion(c) {
   return !selectedRegion || c.state === selectedRegion;
 }
+function passesType(c) {
+  return activeTypes.size === 0 || activeTypes.has(typeOf(c));
+}
 
 // Single source of truth: an entity is shown only if it passes every active
 // filter. Add a new filter here and the whole pipeline picks it up.
 function isVisible(c) {
   const sectorOk = activeSectors.size === 0 || activeSectors.has(c.sector);
-  return sectorOk && passesOrigin(c) && passesRegion(c);
+  return sectorOk && passesType(c) && passesOrigin(c) && passesRegion(c);
 }
 
 // Show every chip its count under the current spatial filters, so you can see
@@ -348,7 +398,7 @@ function updateChipCounts() {
   document.querySelectorAll('#filter-btns .filter-btn').forEach(b => {
     const s = b.dataset.sector;
     if (s === 'all') return;
-    const n = ENTITIES.filter(c => c.sector === s && passesOrigin(c) && passesRegion(c)).length;
+    const n = ENTITIES.filter(c => c.sector === s && passesType(c) && passesOrigin(c) && passesRegion(c)).length;
     b.querySelector('.chip-count').textContent = n;
     b.classList.toggle('chip-empty', n === 0 && !activeSectors.has(s));
     inScope += n;
@@ -356,6 +406,16 @@ function updateChipCounts() {
   // "All" shows what clearing the sector filter would leave you with.
   const allBtn = document.querySelector('#filter-btns .filter-btn[data-sector="all"]');
   if (allBtn) allBtn.querySelector('.chip-count').textContent = inScope;
+
+  // Each type chip counts what it would show under the *other* active filters,
+  // so "Labs 37" next to an active Robotics chip means 37 robotics labs.
+  document.querySelectorAll('#type-btns .type-btn').forEach(b => {
+    const t = b.dataset.type;
+    const sectorOk = (c) => activeSectors.size === 0 || activeSectors.has(c.sector);
+    const n = ENTITIES.filter(c => typeOf(c) === t && sectorOk(c) && passesOrigin(c) && passesRegion(c)).length;
+    b.querySelector('.chip-count').textContent = n;
+    b.classList.toggle('active', activeTypes.has(t));
+  });
 }
 
 // Every entity is its own marker — no clustering. Each dot keeps its sector
@@ -373,6 +433,11 @@ function refreshMarkers() {
 }
 
 function applyFilters() {
+  // Pin the strip's scroll offset across the repaint — see stripScrollBeforeClick.
+  const strip = document.getElementById('filter-btns');
+  const keepScroll = stripScrollBeforeClick ?? strip.scrollLeft;
+  stripScrollBeforeClick = null;
+
   // Button active states ("All" active only when nothing is selected)
   document.querySelectorAll('#filter-btns .filter-btn').forEach(b => {
     const s = b.dataset.sector;
@@ -381,6 +446,7 @@ function applyFilters() {
   refreshMarkers();
   updateChipCounts();
   resetBtn.hidden = !anyFilterActive();
+  strip.scrollLeft = keepScroll;   // undo any scroll-into-view the click caused
   syncUrl();
   updateStats();
   if (listVisible) buildList();
@@ -405,6 +471,7 @@ function syncUrl() {
   const set = (k, v) => (v === null || v === undefined || v === '') ? p.delete(k) : p.set(k, v);
 
   set('s', activeSectors.size ? [...activeSectors].join(',') : null);
+  set('t', activeTypes.size ? [...activeTypes].join(',') : null);
   set('r', selectedRegion);
   // The default origin is implied — only a deliberate change is worth a param.
   set('o', origin === UNIVERSITY_CITIES[0] ? null : origin.name);
@@ -434,14 +501,22 @@ ENTITIES.forEach(c => {
   // Radius encodes headcount; fill encodes type — filled disc = company,
   // hollow ring = research institute. Pure vector markers: crisp, lightweight,
   // and centred exactly on the coordinate. Sector is read from the category row.
-  const r = SIZE_RADIUS[c.size] ?? COMPANY_RADIUS;
+  //
+  // Institutes need a floor and a heavier stroke. Once lab sizes were corrected
+  // to the group's real headcount, most became "startup" (<100) — true, but a
+  // 3.5 px hollow ring at 22% fill is a ghost, and "show me the robotics labs"
+  // rendered as 37 near-invisible dots. A ring reads far lighter than a filled
+  // disc of the same radius, so it gets INSTITUTE_MIN_R and more ink to sit at
+  // the same visual weight.
   const isInst = c.isInstitute;
+  const base = SIZE_RADIUS[c.size] ?? COMPANY_RADIUS;
+  const r = isInst ? Math.max(base, INSTITUTE_MIN_R) : base;
   const marker = L.circleMarker([c.lat, c.lng], {
     radius: r,
     fillColor: cfg.color,
     color: isInst ? cfg.color : 'rgba(255,255,255,0.92)',
-    weight: isInst ? 2 : 1.5,
-    fillOpacity: isInst ? 0.22 : 0.95,
+    weight: isInst ? INST_WEIGHT : 1.5,
+    fillOpacity: isInst ? INST_FILL : 0.95,
     bubblingMouseEvents: false,   // clicking a marker shouldn't close the region panel
   });
 
@@ -450,11 +525,11 @@ ENTITIES.forEach(c => {
   marker.bindPopup(() => popupHtml(c), { maxWidth: 285 });
 
   marker.on('mouseover', function () {
-    this.setStyle({ weight: 3, fillOpacity: isInst ? 0.35 : 1 });
+    this.setStyle({ weight: 3.2, fillOpacity: isInst ? 0.55 : 1 });
     this.bringToFront();
   });
   marker.on('mouseout', function () {
-    this.setStyle({ weight: isInst ? 2 : 1.5, fillOpacity: isInst ? 0.22 : 0.95 });
+    this.setStyle({ weight: isInst ? INST_WEIGHT : 1.5, fillOpacity: isInst ? INST_FILL : 0.95 });
   });
 
   allMarkers.push({ marker, company: c });
@@ -808,7 +883,7 @@ function buildList() {
 
   const body = listRows.map((c, i) => {
     const cfg = SECTOR_CONFIG[c.sector] || { label: c.sector, color: '#888' };
-    const roles = `<a href="${escapeAttr(jobsUrl(c))}" target="_blank" rel="noopener noreferrer" class="co-link" onclick="event.stopPropagation()">Find roles &#8599;</a>`;
+    const roles = `<a href="${escapeAttr(jobsUrl(c))}" target="_blank" rel="noopener noreferrer" class="co-link" onclick="event.stopPropagation()">${jobsLabel(c)} &#8599;</a>`;
     return `<tr data-i="${i}">
       <td><span class="list-name">${esc(c.name)}</span></td>
       <td><span class="list-sector" style="color:${cfg.color}">${sectorIconSvg(c.sector)}<span class="list-sector-lbl">${esc(cfg.label)}</span></span></td>
@@ -861,6 +936,130 @@ document.getElementById('list-container').addEventListener('click', e => {
   }
   const tr = e.target.closest('tr[data-i]');
   if (tr) locateEntity(listRows[+tr.dataset.i]);
+});
+
+// ── Search ────────────────────────────────────────────────────────────────────
+// The map's job is to answer "where is X, and what else is near it". Until now
+// the only text search lived inside the list overlay, so finding a lab you had
+// heard of meant leaving the map. This searches every entity by name, city,
+// sector and description, and flies to the pick.
+//
+// It deliberately ignores the active filters: someone who types "DFKI" wants
+// DFKI, not a lecture about their current sector selection. locateEntity() adds
+// the marker back to the layer if a filter had hidden it.
+
+const searchInput   = document.getElementById('search-input');
+const searchResults = document.getElementById('search-results');
+const SEARCH_LIMIT  = 8;
+
+let searchHits = [];
+let searchCursor = -1;
+
+// Rank by how early and how strongly the query lands: an exact name beats a
+// prefix, a prefix beats a mid-name hit, and a description mention comes last.
+function scoreEntity(c, q) {
+  const name = c.name.toLowerCase();
+  const city = c.city.toLowerCase();
+  if (name === q) return 0;
+  if (name.startsWith(q)) return 1;
+  // Match the start of any word, so "bonn" finds "Uni Bonn — …" and "hbrs" does not.
+  if (new RegExp(`(^|[\\s—–-])${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(name)) return 2;
+  if (name.includes(q)) return 3;
+  if (city.startsWith(q)) return 4;
+  if (city.includes(q)) return 5;
+  if ((SECTOR_CONFIG[c.sector]?.label || '').toLowerCase().includes(q)) return 6;
+  if (c.description.toLowerCase().includes(q)) return 7;
+  return -1;
+}
+
+function runSearch(raw) {
+  const q = raw.trim().toLowerCase();
+  if (q.length < 2) return [];
+  return ENTITIES
+    .map(c => ({ c, score: scoreEntity(c, q) }))
+    .filter(r => r.score >= 0)
+    .sort((a, b) => a.score - b.score || a.c.name.localeCompare(b.c.name))
+    .slice(0, SEARCH_LIMIT)
+    .map(r => r.c);
+}
+
+function renderSearch() {
+  if (!searchHits.length) {
+    searchResults.innerHTML = '<li class="sr-empty">No match on the map yet.</li>';
+    return;
+  }
+  searchResults.innerHTML = searchHits.map((c, i) => {
+    const cfg = SECTOR_CONFIG[c.sector] || { label: c.sector, color: '#888' };
+    const mark = c.isInstitute ? 'sr-ring' : 'sr-disc';
+    return `<li class="sr-item" role="option" id="sr-${i}" data-i="${i}" aria-selected="${i === searchCursor}">
+      <span class="${mark}" style="color:${cfg.color}"></span>
+      <span class="sr-name">${esc(c.name)}</span>
+      <span class="sr-meta">${esc(c.city)} &middot; ${esc(cfg.label)}</span>
+    </li>`;
+  }).join('');
+}
+
+function openSearch() {
+  searchResults.hidden = false;
+  searchInput.setAttribute('aria-expanded', 'true');
+}
+function closeSearch() {
+  searchResults.hidden = true;
+  searchInput.setAttribute('aria-expanded', 'false');
+  searchInput.removeAttribute('aria-activedescendant');
+  searchCursor = -1;
+}
+
+function moveCursor(delta) {
+  if (!searchHits.length) return;
+  searchCursor = (searchCursor + delta + searchHits.length) % searchHits.length;
+  renderSearch();
+  searchInput.setAttribute('aria-activedescendant', `sr-${searchCursor}`);
+  searchResults.querySelector(`[data-i="${searchCursor}"]`)?.scrollIntoView({ block: 'nearest' });
+}
+
+function chooseSearch(i) {
+  const c = searchHits[i];
+  if (!c) return;
+  closeSearch();
+  searchInput.blur();
+  locateEntity(c);
+}
+
+searchInput.addEventListener('input', () => {
+  searchHits = runSearch(searchInput.value);
+  searchCursor = -1;
+  if (searchInput.value.trim().length < 2) { closeSearch(); return; }
+  renderSearch();
+  openSearch();
+});
+
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown')      { e.preventDefault(); moveCursor(1); }
+  else if (e.key === 'ArrowUp')   { e.preventDefault(); moveCursor(-1); }
+  else if (e.key === 'Enter')     { e.preventDefault(); chooseSearch(searchCursor === -1 ? 0 : searchCursor); }
+  else if (e.key === 'Escape')    { searchInput.value = ''; searchHits = []; closeSearch(); }
+});
+
+searchInput.addEventListener('focus', () => { if (searchHits.length) openSearch(); });
+
+searchResults.addEventListener('mousedown', e => {
+  // mousedown, not click: blur would tear the list down before click lands.
+  const li = e.target.closest('.sr-item');
+  if (li) { e.preventDefault(); chooseSearch(+li.dataset.i); }
+});
+
+document.addEventListener('click', e => {
+  if (!document.getElementById('search-box').contains(e.target)) closeSearch();
+});
+
+// "/" focuses search from anywhere, the convention people already have.
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) {
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
+  }
 });
 
 // ── Legend ────────────────────────────────────────────────────────────────────
@@ -938,6 +1137,7 @@ function readUrl() {
   const p = new URLSearchParams(window.location.search);
 
   (p.get('s') || '').split(',').forEach(s => { if (SECTOR_CONFIG[s]) activeSectors.add(s); });
+  (p.get('t') || '').split(',').forEach(t => { if (t === 'company' || t === 'institute') activeTypes.add(t); });
 
   const oi = UNIVERSITY_CITIES.findIndex(c => c.name === p.get('o'));
   if (oi > 0) {
