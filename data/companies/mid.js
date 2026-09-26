@@ -258,4 +258,21 @@ const COMPANIES_MID = [
     description: "Family maker of forage, loader, and feed-mixer wagons for livestock and biogas operations.",
     website: "https://www.strautmann.com"
   },
+
+  // ── REGIONAL COVERAGE (added 2026-09) ──────────────────────────────────────
+  {
+    name: "Fabmatics", city: "Dresden", state: "saxony",
+    lat: 51.134266, lng: 13.779145,
+    sector: "robotics", size: "mid",
+    description: "Builds mobile robots and handling automation for semiconductor fabs and cleanroom production.",
+    website: "https://www.fabmatics.com"
+  },
+  {
+    name: "Raytheon Anschütz", city: "Kiel", state: "schleswig_holstein",
+    lat: 54.361755, lng: 10.14126,
+    address: "Zeyestraße 16-24, 24106, Kiel",
+    sector: "defense", size: "mid", founded: 1905,
+    description: "Maker of gyro compasses, integrated bridge systems, and autonomous navigation technology for merchant and naval ships.",
+    website: "https://www.raytheon-anschuetz.com"
+  },
 ];

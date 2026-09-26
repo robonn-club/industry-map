@@ -23,24 +23,47 @@ companies to connect with.
 - [ ] Deepen company data
 - [ ] Deepen research-institute data
 
-## Next round — decisions locked
+## Next round
 
-1. **Split type from domain.** `research` is currently both a sector and 34% of the dataset
-   (83/245), so filtering "Robotics" shows 28 dots and *hides* DLR RMC, Fraunhofer IPA, DFKI,
-   KIT humanoids and both Bonn labs. Re-sector the 83 institutes to their real domain and make
-   company-vs-institute its own filter, driven by the existing `isInstitute` flag. Drop
-   `research` from `SECTOR_CONFIG`; extend `scripts/validate.mjs` for the new shape.
-2. **Fix institute `size`.** Marker radius encodes headcount, but institutes carry their parent
-   org's size — Uni Bonn AIS (~25 people) and TU Berlin RBO are both `mid` (100–1000), and no
-   institute is `startup`. Re-bucket on group headcount alongside (1).
-3. **Global search box** in the header — name / city / tag, flying to the hit via the existing
-   `locateEntity()`. Today the only text search is inside the list overlay.
-4. **Cluster or spiderfy dense cities.** Munich 38, Berlin 23, Stuttgart 9 overlap at the
-   default zoom; only *exactly identical* coordinates are fanned out today.
-5. **`tags`, `updated`, `source` fields** + a generated `data/map.json`, so engineers can find
-   by technology (SLAM, manipulation, perception, ROS) and the bot/website can reuse the data.
-6. ~~**GitHub Action** running `scripts/validate.mjs` on every PR~~ — **done**, along with
-   `scripts/check-links.mjs` and a weekly link sweep. See [scripts/README.md](scripts/README.md).
+1. ~~**Split type from domain.**~~ **Done.** All 83 institutes carry a real sector;
+   `research` is gone from `SECTOR_CONFIG` and from the validator, and
+   company-vs-institute is its own **Type** filter (`?t=company|institute`).
+   Robotics went **28 → 65**, AI & ML **24 → 51**.
+2. ~~**Fix institute `size`.**~~ **Done.** Sizes are now the group's headcount, not
+   the parent university's: 43 labs are `startup` (<100), where none were before.
+   Institute markers gained a radius floor and heavier stroke, because a correct
+   `startup` ring at 3.5 px was invisible.
+3. ~~**Global search box.**~~ **Done.** Header search over name, city, sector and
+   description; `/` focuses it, arrows + Enter pick, and it ignores active filters.
+4. **Cluster or spiderfy dense cities.** Munich 38, Berlin 23, Stuttgart 9 overlap at
+   the default zoom; only *exactly identical* coordinates are fanned out today. Search
+   takes some pressure off this, but the visual pile-up remains.
+5. **`tags`, `updated`, `source` fields** + a generated `data/map.json`. Search reads
+   descriptions today, which covers technology terms only where a description happens
+   to mention them — `slam` finds 3 labs, and there are certainly more.
+6. ~~**GitHub Action** running `scripts/validate.mjs` on every PR~~ — **done**, along
+   with `scripts/check-links.mjs` and a weekly link sweep. See
+   [scripts/README.md](scripts/README.md).
+
+## Needs human review
+
+The 83 institute sector/size assignments were made by reading each entry's name and
+description. Most are unambiguous; these are judgement calls worth a second opinion:
+
+| Entry | Called it | Why it is arguable |
+|---|---|---|
+| Max Planck Institute for Intelligent Systems | `robotics` | Genuinely split — Tübingen is ML-heavy, Stuttgart is robotics |
+| DFKI (main) | `ai_ml` | "Europe's leading AI lab" but with major robotics groups; its Robotics Innovation Center is separately listed as `robotics` |
+| Fraunhofer IML | `industrial` | Logistics/material flow; a robotics student would also expect it under robotics |
+| Fraunhofer IOSB | `defense` | Optronics and image exploitation; also does civil autonomous systems |
+| Fraunhofer HHI | `software` | Telecoms, photonics and video coding fit none of the seven sectors well |
+| Uni Würzburg — Robotics and Telematics | `robotics` | Small-satellite formations arguably belong under Aerospace & Defense |
+| TUM — Computer Vision & AI | `ai_ml` | Visual SLAM is robotics-adjacent; filed under the chair's own name |
+| Science of Intelligence | `robotics` | A cluster spanning robotics, AI and cognitive science |
+| RWTH Aachen Robotics | `mid` | An umbrella entry over several chairs rather than one group |
+
+Sizes for the large Fraunhofer institutes (IPA, IML, IOSB, IIS `big`) are estimates from
+institute scale, not headcounts pulled from a source.
 
 ## Link health
 
@@ -64,8 +87,35 @@ there now.
 **Germany-first**: worldwide audience, German dataset. The validator's German bounding box
 stays. `data/geo/world.js` is still produced by the build but never rendered — safe to drop.
 
-## Known coverage gaps
+## Coverage
 
-Bavaria 65, BW 53, NRW 39, Berlin 23 … but MV 1, Saarland 2, Brandenburg 2, Saxony-Anhalt 2.
-Roughly true to the real industry, though the region panel is near-empty for six states. The
-map is a curated sample, not a census, and should say so.
+**269 entries — 169 companies, 100 labs — and every one of the 16 Bundesländer is now
+represented.** A September 2026 pass added 25 entries aimed squarely at the states the map
+barely reached:
+
+| State | was | now | added |
+|---|---|---|---|
+| Mecklenburg-Vorpommern | 1 | 3 | Fraunhofer IGP, Uni Rostock Chair of Mechatronics |
+| Saxony-Anhalt | 2 | 4 | ifak, Fraunhofer IMWS |
+| Brandenburg | 2 | 3 | Rolls-Royce Deutschland (Dahlewitz) |
+| Saarland | 2 | 3 | ZeMA |
+| Thuringia | 3 | 6 | Fraunhofer IOF, Fraunhofer IDMT, Carl Zeiss Meditec |
+| Schleswig-Holstein | 4 | 8 | GEOMAR, Drägerwerk, Fraunhofer ISIT, Raytheon Anschütz |
+| Hamburg | 5 | 7 | Fraunhofer CML, TU Hamburg IMEK |
+| Bremen | 6 | 7 | OHB System |
+| Rhineland-Palatinate | 7 | 8 | Schott |
+| Saxony | 7 | 11 | Fraunhofer IPMS / IVI / IKTS, Fabmatics |
+| Hesse | 8 | 11 | ESA ESOC, Fraunhofer LBF, Fraunhofer SIT |
+
+Density still favours the south — Bavaria 4.9 and Berlin 5.9 entries per million residents
+against Brandenburg 1.2 and Rhineland-Palatinate 1.9 — which is broadly true to where the
+industry sits, but the thinnest states are no longer near-empty. The map remains a curated
+sample, not a census.
+
+### Still thin
+- **Lower Saxony (18), NRW (39)** are large states whose entries skew to a few cities.
+- **Rhineland-Palatinate and Saarland** have the key robotics players (DFKI, RPTU, ZeMA,
+  CISPA) but little industry beyond them.
+- No entry anywhere is a *branch site* of a foreign company: the map tracks headquarters and
+  independent research institutes, so e.g. John Deere's Kaiserslautern R&D centre is absent.
+

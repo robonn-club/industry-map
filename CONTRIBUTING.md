@@ -21,24 +21,39 @@ file matching the company's size (`global.js`, `big.js`, `mid.js`, or
 
 ## Add a research institute
 
-Same fields, in [`data/institutes.js`](data/institutes.js). Always use
-`sector: "research"`.
+Same fields, in [`data/institutes.js`](data/institutes.js). Two things differ from
+the guesswork you might expect:
+
+- **`sector` is the domain the group works in** — `robotics`, `ai_ml`, … — exactly
+  as for a company. There is no `research` sector. Being an institute is expressed
+  by living in this file, which the map surfaces as the **Type** filter. (Tagging
+  every lab `research` is what used to make "Robotics" hide DLR, Fraunhofer IPA,
+  DFKI and the Bonn labs.)
+- **`size` is the headcount of the group, not of its parent university.** A named
+  professor's chair is almost always `startup` (<100), even at a huge university.
+  Marker radius encodes this, so inheriting the university's size drew a 25-person
+  lab the size of a mid-cap firm.
 
 ## Field reference
 
 | Field | Values |
 |-------|--------|
-| `sector` | `robotics` · `automotive` · `ai_ml` · `industrial` · `software` · `defense` · `agriculture` · `research` |
+| `sector` | `robotics` · `automotive` · `ai_ml` · `industrial` · `software` · `defense` · `agriculture` |
 | `size` | `startup` (<100) · `mid` (100–1000) · `big` (1000–5000) · `global` (5000+) |
 | `state` | `bw` `bavaria` `berlin` `brandenburg` `bremen` `hamburg` `hesse` `mv` `lower_saxony` `nrw` `rhineland_palatinate` `saarland` `saxony` `saxony_anhalt` `schleswig_holstein` `thuringia` |
 | `lat` / `lng` | Decimal coordinates (look them up on a map; ~4 decimals is plenty) |
 | `description` | One sentence, factual, no marketing fluff |
+| `founded` | Optional. Include it when a source states it; **leave it out rather than guessing** |
 
 ## Guidelines
 
 - **Real, verifiable companies only** — include the official `website`, and make it
   the organisation's own domain (not a LinkedIn or Crunchbase page). The link is
   what the map is for, and it gets checked automatically.
+- **Leave uncertain fields out.** `founded` and `address` are optional; an absent
+  value is honest, an invented one quietly corrupts the dataset.
+- **Don't imply someone is hiring.** Descriptions say what an organisation works
+  on. The roles link is a search, not a claim that a position is open.
 - **No duplicates** — search the file first.
 - Keep descriptions to **one sentence**.
 - Place the entry under the matching sector comment to keep the file tidy.
