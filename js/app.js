@@ -723,8 +723,8 @@ function openPanel(region) {
     <div class="panel-name">${esc(region.name)}</div>
     <div class="panel-tagline">${esc(region.tagline)}</div>
     <p class="panel-overview">${esc(region.overview)}</p>
-    <div class="panel-sec">SECTOR BREAKDOWN &mdash; ${total} companies</div>
-    ${barsHtml || '<p class="panel-empty">No companies tracked yet.</p>'}
+    <div class="panel-sec">SECTOR BREAKDOWN &mdash; ${total} ${total === 1 ? 'entry' : 'entries'}</div>
+    ${barsHtml || '<p class="panel-empty">Nothing tracked here yet.</p>'}
     <div class="panel-sec">KEY STRENGTHS</div>
     <ul class="panel-strengths">${region.strengths.map(s => `<li>${esc(s)}</li>`).join('')}</ul>
     <div class="panel-sec">CONNECTED REGIONS</div>

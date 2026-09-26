@@ -87,8 +87,35 @@ there now.
 **Germany-first**: worldwide audience, German dataset. The validator's German bounding box
 stays. `data/geo/world.js` is still produced by the build but never rendered — safe to drop.
 
-## Known coverage gaps
+## Coverage
 
-Bavaria 65, BW 53, NRW 39, Berlin 23 … but MV 1, Saarland 2, Brandenburg 2, Saxony-Anhalt 2.
-Roughly true to the real industry, though the region panel is near-empty for six states. The
-map is a curated sample, not a census, and should say so.
+**269 entries — 169 companies, 100 labs — and every one of the 16 Bundesländer is now
+represented.** A September 2026 pass added 25 entries aimed squarely at the states the map
+barely reached:
+
+| State | was | now | added |
+|---|---|---|---|
+| Mecklenburg-Vorpommern | 1 | 3 | Fraunhofer IGP, Uni Rostock Chair of Mechatronics |
+| Saxony-Anhalt | 2 | 4 | ifak, Fraunhofer IMWS |
+| Brandenburg | 2 | 3 | Rolls-Royce Deutschland (Dahlewitz) |
+| Saarland | 2 | 3 | ZeMA |
+| Thuringia | 3 | 6 | Fraunhofer IOF, Fraunhofer IDMT, Carl Zeiss Meditec |
+| Schleswig-Holstein | 4 | 8 | GEOMAR, Drägerwerk, Fraunhofer ISIT, Raytheon Anschütz |
+| Hamburg | 5 | 7 | Fraunhofer CML, TU Hamburg IMEK |
+| Bremen | 6 | 7 | OHB System |
+| Rhineland-Palatinate | 7 | 8 | Schott |
+| Saxony | 7 | 11 | Fraunhofer IPMS / IVI / IKTS, Fabmatics |
+| Hesse | 8 | 11 | ESA ESOC, Fraunhofer LBF, Fraunhofer SIT |
+
+Density still favours the south — Bavaria 4.9 and Berlin 5.9 entries per million residents
+against Brandenburg 1.2 and Rhineland-Palatinate 1.9 — which is broadly true to where the
+industry sits, but the thinnest states are no longer near-empty. The map remains a curated
+sample, not a census.
+
+### Still thin
+- **Lower Saxony (18), NRW (39)** are large states whose entries skew to a few cities.
+- **Rhineland-Palatinate and Saarland** have the key robotics players (DFKI, RPTU, ZeMA,
+  CISPA) but little industry beyond them.
+- No entry anywhere is a *branch site* of a foreign company: the map tracks headquarters and
+  independent research institutes, so e.g. John Deere's Kaiserslautern R&D centre is absent.
+

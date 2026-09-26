@@ -458,4 +458,22 @@ const COMPANIES_GLOBAL = [
     description: "Agribusiness cooperative trading animal feed, fertiliser, grain, and farm machinery across northern Germany.",
     website: "https://www.agravis.de"
   },
+
+  // ── REGIONAL COVERAGE (added 2026-09) ──────────────────────────────────────
+  {
+    name: "Drägerwerk", city: "Lübeck", state: "schleswig_holstein",
+    lat: 53.857953, lng: 10.670942,
+    address: "Moislinger Allee 53-55, 23558, Lübeck",
+    sector: "industrial", size: "global", founded: 1889,
+    description: "Builds ventilators, anaesthesia machines, and gas-detection and firefighting equipment for hospitals and industry.",
+    website: "https://www.draeger.com"
+  },
+  {
+    name: "Schott", city: "Mainz", state: "rhineland_palatinate",
+    lat: 50.016296, lng: 8.246865,
+    address: "Hattenbergstraße 10, 55122, Mainz",
+    sector: "industrial", size: "global", founded: 1884,
+    description: "Specialty-glass maker supplying optics, semiconductor, pharmaceutical-packaging, and display industries.",
+    website: "https://www.schott.com"
+  },
 ];

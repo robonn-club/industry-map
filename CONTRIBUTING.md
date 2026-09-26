@@ -43,12 +43,17 @@ the guesswork you might expect:
 | `state` | `bw` `bavaria` `berlin` `brandenburg` `bremen` `hamburg` `hesse` `mv` `lower_saxony` `nrw` `rhineland_palatinate` `saarland` `saxony` `saxony_anhalt` `schleswig_holstein` `thuringia` |
 | `lat` / `lng` | Decimal coordinates (look them up on a map; ~4 decimals is plenty) |
 | `description` | One sentence, factual, no marketing fluff |
+| `founded` | Optional. Include it when a source states it; **leave it out rather than guessing** |
 
 ## Guidelines
 
 - **Real, verifiable companies only** — include the official `website`, and make it
   the organisation's own domain (not a LinkedIn or Crunchbase page). The link is
   what the map is for, and it gets checked automatically.
+- **Leave uncertain fields out.** `founded` and `address` are optional; an absent
+  value is honest, an invented one quietly corrupts the dataset.
+- **Don't imply someone is hiring.** Descriptions say what an organisation works
+  on. The roles link is a search, not a claim that a position is open.
 - **No duplicates** — search the file first.
 - Keep descriptions to **one sentence**.
 - Place the entry under the matching sector comment to keep the file tidy.

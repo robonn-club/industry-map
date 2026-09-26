@@ -251,4 +251,30 @@ const COMPANIES_BIG = [
     description: "Maker of small arms and service rifles supplying the Bundeswehr and NATO armed forces.",
     website: "https://www.heckler-koch.com/en/"
   },
+
+  // ── REGIONAL COVERAGE (added 2026-09) ──────────────────────────────────────
+  {
+    name: "Carl Zeiss Meditec", city: "Jena", state: "thuringia",
+    lat: 50.885737, lng: 11.595028,
+    address: "Göschwitzer Straße 51-52, 07745, Jena",
+    sector: "industrial", size: "big", founded: 2002,
+    description: "Builds ophthalmic diagnostic devices, surgical microscopes, and image-guided systems for eye and neurosurgery.",
+    website: "https://www.zeiss.com/meditec"
+  },
+  {
+    name: "Rolls-Royce Deutschland", city: "Blankenfelde-Mahlow", state: "brandenburg",
+    lat: 52.30953, lng: 13.437818,
+    address: "Eschenweg 11, 15827, Blankenfelde-Mahlow",
+    sector: "defense", size: "big", founded: 1990,
+    description: "Develops and assembles civil aero engines at Dahlewitz, and is the group's centre of excellence for two-shaft engines.",
+    website: "https://www.rolls-royce.com/country-sites/deutschland.aspx"
+  },
+  {
+    name: "OHB System", city: "Bremen", state: "bremen",
+    lat: 53.101871, lng: 8.858061,
+    address: "Universitätsallee 27-29, 28359, Bremen",
+    sector: "defense", size: "big", founded: 1981,
+    description: "Builds satellites and space systems, including Galileo navigation spacecraft and Earth-observation missions.",
+    website: "https://www.ohb-system.de"
+  },
 ];

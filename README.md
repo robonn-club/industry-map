@@ -9,8 +9,8 @@ companies and labs to connect with.
 
 ## What it shows
 
-- **162 companies and 83 university labs / research institutes** across 7 sectors,
-  plotted on a precise vector map of Germany and its 16 states.
+- **169 companies and 100 university labs / research institutes** across 7 sectors,
+  plotted on a precise vector map of Germany and its 16 states — every state has entries.
 - **Search** (press `/`) over names, cities, sectors and descriptions — typing
   `slam` finds the labs that do SLAM. Results ignore the active filters and fly
   straight to the hit.
@@ -29,7 +29,7 @@ An institute carries the domain it works in — robotics, AI & ML, … — exact
 company, and *being* an institute is the separate **Type** axis. Institutes used to
 all sit in a `research` sector, which meant filtering for **Robotics** returned 28
 companies and hid DLR, Fraunhofer IPA, DFKI and both Bonn labs. Robotics now returns
-**65**, of which 37 are labs.
+**70**, of which 41 are labs.
 
 ## Run locally
 

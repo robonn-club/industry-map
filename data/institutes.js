@@ -682,4 +682,161 @@ const INSTITUTES = [
     description: "Paderborn University's interdisciplinary research center for intelligent technical systems and robotics.",
     website: "https://www.hni.uni-paderborn.de"
   },
+
+  // ── REGIONAL COVERAGE (added 2026-09) ──────────────────────────────────────
+  // Filling the states the map barely reached: MV, Saxony-Anhalt, Brandenburg,
+  // Schleswig-Holstein, Thuringia, Saxony, Hesse and Hamburg. Coordinates are
+  // OSM footprints; `founded` is omitted where no source states one.
+
+  // ── SAXONY ────────────────────────────────────────────────────────────────
+  {
+    name: "Fraunhofer IPMS", city: "Dresden", state: "saxony",
+    lat: 51.125482, lng: 13.783123,
+    address: "Maria-Reiche-Straße 2, 01109, Dresden",
+    sector: "industrial", size: "mid",
+    description: "Fraunhofer institute for photonic microsystems — MEMS scanners, sensors, and microelectronics for industry.",
+    website: "https://www.ipms.fraunhofer.de"
+  },
+  {
+    name: "Fraunhofer IVI", city: "Dresden", state: "saxony",
+    lat: 51.027294, lng: 13.736884,
+    address: "Zeunerstraße 38, 01069, Dresden",
+    sector: "automotive", size: "mid", founded: 1999,
+    description: "Fraunhofer institute for transportation and infrastructure systems, working on automated and electric vehicles.",
+    website: "https://www.ivi.fraunhofer.de"
+  },
+  {
+    name: "Fraunhofer IKTS", city: "Dresden", state: "saxony",
+    lat: 51.02912, lng: 13.78068,
+    address: "Winterbergstraße 28, 01277, Dresden",
+    sector: "industrial", size: "mid", founded: 1992,
+    description: "Fraunhofer institute for ceramic technologies and systems, from fuel cells to non-destructive testing.",
+    website: "https://www.ikts.fraunhofer.de"
+  },
+
+  // ── THURINGIA ─────────────────────────────────────────────────────────────
+  {
+    name: "Fraunhofer IOF", city: "Jena", state: "thuringia",
+    lat: 50.908378, lng: 11.567965,
+    address: "Albert-Einstein-Straße 7, 07745, Jena",
+    sector: "industrial", size: "mid", founded: 1992,
+    description: "Fraunhofer institute for applied optics and precision engineering, building optical systems for industry and space.",
+    website: "https://www.iof.fraunhofer.de"
+  },
+  {
+    name: "Fraunhofer IDMT", city: "Ilmenau", state: "thuringia",
+    lat: 50.683614, lng: 10.93221,
+    address: "Ehrenbergstraße 31, 98693, Ilmenau",
+    sector: "ai_ml", size: "mid",
+    description: "Fraunhofer institute for digital media technology, applying machine listening to audio, speech, and industrial sound analysis.",
+    website: "https://www.idmt.fraunhofer.de"
+  },
+
+  // ── SCHLESWIG-HOLSTEIN ────────────────────────────────────────────────────
+  {
+    name: "GEOMAR Helmholtz Centre for Ocean Research", city: "Kiel", state: "schleswig_holstein",
+    lat: 54.32723, lng: 10.18185,
+    address: "Wischhofstraße 1-3, 24148, Kiel",
+    sector: "robotics", size: "big", founded: 2012,
+    description: "Ocean research centre operating the ROV KIEL 6000 and Girona 500 AUVs for deep-sea survey and seafloor mapping.",
+    website: "https://www.geomar.de"
+  },
+  {
+    name: "Fraunhofer ISIT", city: "Itzehoe", state: "schleswig_holstein",
+    lat: 53.9572, lng: 9.48278,
+    address: "Fraunhoferstraße 1, 25524, Itzehoe",
+    sector: "industrial", size: "mid", founded: 1999,
+    description: "Fraunhofer institute for silicon technology, producing MEMS sensors, power electronics, and microbatteries.",
+    website: "https://www.isit.fraunhofer.de"
+  },
+
+  // ── MECKLENBURG-VORPOMMERN ────────────────────────────────────────────────
+  {
+    name: "Fraunhofer IGP", city: "Rostock", state: "mv",
+    lat: 54.078796, lng: 12.113487,
+    address: "Albert-Einstein-Straße 30, 18059, Rostock",
+    sector: "industrial", size: "mid",
+    description: "Fraunhofer institute for large structures in production engineering, automating shipbuilding and steel fabrication.",
+    website: "https://www.igp.fraunhofer.de"
+  },
+  {
+    name: "Uni Rostock — Chair of Mechatronics", city: "Rostock", state: "mv",
+    lat: 54.075312, lng: 12.098576,
+    address: "Justus-von-Liebig-Weg 6, 18059, Rostock",
+    sector: "robotics", size: "startup",
+    description: "Harald Aschemann's chair on nonlinear and robust control for autonomous hovercraft, multicopters, and mobile robots.",
+    website: "https://www.com.uni-rostock.de"
+  },
+
+  // ── SAXONY-ANHALT ─────────────────────────────────────────────────────────
+  {
+    name: "ifak — Institut für Automation und Kommunikation", city: "Magdeburg", state: "saxony_anhalt",
+    lat: 52.142295, lng: 11.657564,
+    address: "Werner-Heisenberg-Straße 1, 39106, Magdeburg",
+    sector: "industrial", size: "mid",
+    description: "Independent institute for automation and communication, researching industrial networks, sensors, and process control.",
+    website: "https://www.ifak.eu"
+  },
+  {
+    name: "Fraunhofer IMWS", city: "Halle (Saale)", state: "saxony_anhalt",
+    lat: 51.494556, lng: 11.939472,
+    address: "Walter-Hülse-Straße 1, 06120, Halle (Saale)",
+    sector: "industrial", size: "mid", founded: 2016,
+    description: "Fraunhofer institute for microstructure of materials and systems, diagnosing why components and materials fail.",
+    website: "https://www.imws.fraunhofer.de"
+  },
+
+  // ── HESSE ─────────────────────────────────────────────────────────────────
+  {
+    name: "ESA ESOC — European Space Operations Centre", city: "Darmstadt", state: "hesse",
+    lat: 49.87096, lng: 8.62264,
+    address: "Robert-Bosch-Straße 5, 64293, Darmstadt",
+    sector: "defense", size: "mid", founded: 1967,
+    description: "ESA's mission control, flying Europe's science and Earth-observation satellites and tracking space debris.",
+    website: "https://www.esa.int/About_Us/ESOC"
+  },
+  {
+    name: "Fraunhofer LBF", city: "Darmstadt", state: "hesse",
+    lat: 49.9036, lng: 8.683086,
+    address: "Bartningstraße 47, 64289, Darmstadt",
+    sector: "industrial", size: "mid", founded: 1938,
+    description: "Fraunhofer institute for structural durability and system reliability, testing how parts behave under load over a lifetime.",
+    website: "https://www.lbf.fraunhofer.de"
+  },
+  {
+    name: "Fraunhofer SIT", city: "Darmstadt", state: "hesse",
+    lat: 49.871689, lng: 8.638315,
+    address: "Rheinstraße 75, 64295, Darmstadt",
+    sector: "software", size: "mid", founded: 2008,
+    description: "Fraunhofer institute for secure information technology, working on cryptography, software security, and data protection.",
+    website: "https://www.sit.fraunhofer.de"
+  },
+
+  // ── HAMBURG ───────────────────────────────────────────────────────────────
+  {
+    name: "Fraunhofer CML", city: "Hamburg", state: "hamburg",
+    lat: 53.467487, lng: 9.982399,
+    address: "Blohmstraße 32, 21079, Hamburg",
+    sector: "industrial", size: "startup", founded: 2010,
+    description: "Fraunhofer centre for maritime logistics, researching port automation, autonomous shipping, and terminal robotics.",
+    website: "https://www.cml.fraunhofer.de"
+  },
+  {
+    name: "TU Hamburg — Mechatronics in Mechanics", city: "Hamburg", state: "hamburg",
+    lat: 53.459811, lng: 9.970297,
+    address: "Eißendorfer Straße 38, 21073, Hamburg",
+    sector: "robotics", size: "startup",
+    description: "Thorsten Kern's institute at TUHH on mechatronic system design and haptic human-machine interfaces.",
+    website: "https://www.tuhh.de/imek"
+  },
+
+  // ── SAARLAND ──────────────────────────────────────────────────────────────
+  {
+    name: "ZeMA — Mechatronics and Automation", city: "Saarbrücken", state: "saarland",
+    lat: 49.228749, lng: 7.031134,
+    address: "Eschbergerweg 46, 66121, Saarbrücken",
+    sector: "robotics", size: "startup",
+    description: "Non-profit centre for mechatronics and automation, working on assistive robots, Industry 4.0, and condition monitoring.",
+    website: "https://www.zema.de"
+  },
 ];
