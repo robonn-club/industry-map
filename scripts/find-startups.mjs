@@ -8,15 +8,16 @@
 //   node scripts/find-startups.mjs --since DATE    look further back than LOOKBACK_DAYS
 //
 // It reads the startup press (SOURCES below), keeps the names that fall inside the
-// map's seven domains, and reads each company's own imprint for its legal entity and
-// register number. The "Find startups" workflow then opens one pull request for a
-// person to review. A lead is only a name: nothing joins the list of startups until
-// the five-step check in NEW-STARTUPS.md has been done. Everything proposed is
-// remembered in new-startups.seen.json, so a lead deleted in review does not return.
+// map's seven domains, reads each company's own imprint for its legal entity and register
+// number, and looks up the first-entry date on a public mirror of the register. The "Find
+// startups" workflow then opens one pull request for a person to review. A lead is only
+// a name: nothing joins the list of startups until the five-step check in NEW-STARTUPS.md
+// has been done. Everything proposed is remembered in new-startups.seen.json, so a lead
+// deleted in review does not return.
 //
 // What it never does:
-//   • Contact the commercial register or North Data. The first-entry date stays a
-//     manual check, because the register's terms forbid automated retrieval.
+//   • Contact the commercial register, whose terms forbid automated retrieval, or North
+//     Data. Where the mirror cannot settle a date, the lead says so and a person looks.
 //   • Copy article text. Those paragraphs name founders; only company facts and a
 //     link back to the article are kept.
 //   • Read a page that robots.txt closes to it. Run by an AI agent, it obeys the rules
@@ -211,13 +212,13 @@ const NOT_A_STARTUP = /\b(?:Ventures?|Capital|Partners|Summit|Conference|Awards?
 
 // ── The imprint ───────────────────────────────────────────────────────────────
 
-const REGISTER_NUMBER = /\b(HR ?[AB]|GnR)\b[\s.:#\-–]*(?:Nr\.?|Nummer|No\.?|Number)?[\s.:#]*(\d{2,7})(?: (B|P|CB|FF|NP|HL|KI|FL|PI)\b)?/;
+const REGISTER_NUMBER = /\b(HR ?[AB]|GnR)\b[\s.:#\-–]*(?:Nr\.?|Nummer|No\.?|Number)?[\s.:#]*(\d{2,7})(?: (B|P|CB|FF|NP|HL|KI|FL|PI|HB)\b)?/;
 const REGISTER_NUMBER_WORDED = /\b(?:Handelsregister|Register)[- ]?(?:nummer|nr\.?|number|no\.?)[\s.:#]*(?:HRB[\s.:#]*)?(\d{3,7})\b/i;
 const COURT_WORDS = "Amtsgerichts?|Registergerichts?|Handelsregister|Register ?[Cc]ourt|Registry [Cc]ourt|Registration [Cc]ourt|Court of [Rr]egist\\w+|Local [Cc]ourt|District [Cc]ourt";
 const COURT_NAME = "(?:Bad )?[A-ZÄÖÜ][a-zäöüß]+(?:-[A-ZÄÖÜ][a-zäöüß]+)?(?: ?\\([A-ZÄÖÜ][a-zäöüß]+\\)| (?:am|an der|im|in der) [A-ZÄÖÜ][a-zäöüß]+)?";
 const COURT = new RegExp(`\\b(?:${COURT_WORDS})\\b[\\s:.,\\-–]*(?:(?:des|of|at|in|beim|am|Amtsgerichts?|Local [Cc]ourt|District [Cc]ourt)\\s+)*(${COURT_NAME})`, "g");
 const COURT_SHORT = new RegExp(`\\bAG (${COURT_NAME})`, "g");
-const NOT_A_COURT = /^(?:Register|Handelsregister|Eintragung|Eintrag|Nummer|Number|Deutschland|Germany|Sitz)|str(?:\.|aße)?$/;
+const NOT_A_COURT = /^(?:Register|Handelsregister|Eintragung|Eintrag|Nummer|Number|Deutschland|Germany|Sitz|Commercial|Local|District|Court|Registry)|str(?:\.|aße)?$/;
 const LEGAL_FORM = "(?:gGmbH|GmbH(?: ?& ?Co\\.? ?KG)?|UG(?: ?\\(haftungsbeschränkt\\))?(?: ?& ?Co\\.? ?KG)?|AG|SE|KG|OHG|eG)";
 const PLACE_WORD = "[A-ZÄÖÜ][a-zäöüß.\\-]+";
 const PLACE = new RegExp(`\\b(\\d{5})[ \\u00a0]+(${PLACE_WORD}(?: (?:am|an der|im|in der|ob der|bei|vor der|\\([A-ZÄÖÜ][a-zäöüß. ]+\\)|${PLACE_WORD}))*)`, "g");
@@ -229,7 +230,7 @@ const LOOKS_LIKE_IMPRINT = /impressum|imprint|legal notice|angaben gemäß|§ ?5
 // How the register's own court names are written in our data.
 const COURT_SPELLING = {
   munich: "München", muenchen: "München", cologne: "Köln", koeln: "Köln", nuremberg: "Nürnberg", nuernberg: "Nürnberg",
-  duesseldorf: "Düsseldorf", hanover: "Hannover", frankfurt: "Frankfurt am Main",
+  duesseldorf: "Düsseldorf", hanover: "Hannover", frankfurt: "Frankfurt am Main", ludwigshafen: "Ludwigshafen am Rhein",
 };
 export function normaliseCourt(raw) {
   const name = raw.replace(/\s+/g, " ").trim();
@@ -425,6 +426,150 @@ export async function readImprint(website) {
   return { problem: "the imprint could not be read (probably drawn by JavaScript)" };
 }
 
+// ── The first-entry date ──────────────────────────────────────────────────────
+// online-handelsregister.de has a public page per company, reached by court and number
+// alone, and states the first entry in so many words. Checked against the entries we
+// verified by hand: see NEW-STARTUPS.md. It is a mirror, not the register, and it has two
+// traps, because its "Ersteintragung" is the first entry under this court and number:
+//   • A company that moved seat. The page says "bisher ... Amtsgericht ... HRB ...", so the
+//     old court is read too.
+//   • A company converted from another legal form ("Umwandlung"). It existed before this
+//     number did, so the date settles nothing and a person has to look.
+
+const REGISTER_PAGES = "https://www.online-handelsregister.de/handelsregisterauszug";
+const COURTS = {
+  bw: "Freiburg, Mannheim, Stuttgart, Ulm",
+  by: "Amberg, Ansbach, Aschaffenburg, Augsburg, Bamberg, Bayreuth, Coburg, Deggendorf, Fürth, Hof, Ingolstadt, Kempten, Landshut, Memmingen, München, Nürnberg, Passau, Regensburg, Schweinfurt, Straubing, Traunstein, Weiden, Würzburg",
+  be: "Charlottenburg",
+  br: "Cottbus, Frankfurt (Oder), Neuruppin, Potsdam",
+  hb: "Bremen",
+  hh: "Hamburg",
+  he: "Bad Homburg, Darmstadt, Eschwege, Frankfurt am Main, Friedberg, Fritzlar, Fulda, Gießen, Hanau, Kassel, Korbach, Königstein, Limburg, Marburg, Offenbach, Wetzlar, Wiesbaden",
+  mv: "Neubrandenburg, Rostock, Schwerin, Stralsund",
+  ni: "Aurich, Braunschweig, Göttingen, Hannover, Hildesheim, Lüneburg, Oldenburg, Osnabrück, Stade, Tostedt, Walsrode",
+  nw: "Aachen, Arnsberg, Bielefeld, Bochum, Bonn, Coesfeld, Dortmund, Duisburg, Düren, Düsseldorf, Essen, Gelsenkirchen, Gütersloh, Hagen, Hamm, Iserlohn, Kleve, Köln, Krefeld, Lemgo, Mönchengladbach, Münster, Neuss, Paderborn, Recklinghausen, Siegburg, Siegen, Steinfurt, Wesel, Wuppertal",
+  rp: "Bad Kreuznach, Kaiserslautern, Koblenz, Landau, Ludwigshafen am Rhein, Mainz, Montabaur, Wittlich, Zweibrücken",
+  sl: "Saarbrücken",
+  sn: "Chemnitz, Dresden, Leipzig",
+  st: "Stendal",
+  sh: "Flensburg, Kiel, Lübeck, Pinneberg",
+  th: "Jena",
+};
+const COURT_STATE = new Map(Object.entries(COURTS).flatMap(([state, list]) => list.split(", ").map(c => [c, state])));
+// These courts can write letters after the number, and the page's address then needs
+// them, even where a source (or our own data) leaves them out.
+const COURT_LETTERS = {
+  Charlottenburg: "B", Potsdam: "P", Cottbus: "CB", "Frankfurt (Oder)": "FF", Neuruppin: "NP",
+  Kiel: "KI", Lübeck: "HL", Flensburg: "FL", Pinneberg: "PI", Bremen: "HB",
+};
+const pathWord = (s) => s.replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/Ä/g, "Ae").replace(/Ö/g, "Oe").replace(/Ü/g, "Ue").replace(/ß/g, "ss").replace(/[() ]+/g, "-").replace(/-$/, "");
+
+const parseRegister = (register) => String(register ?? "").match(/^Amtsgericht (.+?) (HRB|HRA|GnR) (\d+)/);
+
+// The addresses to try for a register entry, best guess first; none for a court not in
+// the list above. Most pages answer to court and number alone. Charlottenburg's only
+// answer with the company's name as well, so the legal name is the last try.
+export function registerPages(register, legalName) {
+  const m = parseRegister(register);
+  if (!m) return [];
+  const court = m[1].replace(" (Berlin)", "").replace(/ \((?!Oder).*\)$/, "");
+  const state = COURT_STATE.get(court);
+  if (!state) return [];
+  const base = `${REGISTER_PAGES}/${state}/${court === "Charlottenburg" ? "Berlin-Charlottenburg" : pathWord(court)}/${m[2]}/`;
+  const slug = legalName ? pathWord(legalName.replace(/[.,'’&]/g, "")) : "";
+  return [
+    ...(COURT_LETTERS[court] ? [`${base}${m[3]}${COURT_LETTERS[court]}`] : []),
+    `${base}${m[3]}`,
+    ...(slug ? [`${base}${m[3]}/${slug}`] : []),
+  ];
+}
+
+const isoFromGerman = (m) => `${m[3]}-${m[2]}-${m[1]}`;
+
+// A date the page states as the first entry, or its "Gründungsdatum" field if the first
+// shareholder list went into the register folder the same day. The field alone is not
+// enough: for Zepta it reads February 2025, while the first entry and the first list are
+// November 2024. Measured against 15 field-only pages, the lists agreed 11 times, each time
+// with the right date, and exposed Zepta.
+export function parseRegisterPage(page) {
+  const text = page.replace(/\s+/g, " ");
+  const stated = text.match(/Ersteintragung von .{2,160}? ins Handelsregister erfolgte am (\d\d)\.(\d\d)\.(\d{4})/)
+    ?? text.match(/Neueintragung vom (\d\d)\.(\d\d)\.(\d{4})/);
+  const field = text.match(/Gründungsdatum: ?(\d\d)\.(\d\d)\.(\d{4})/);
+  const fieldDate = field && isoFromGerman(field);
+  const firstList = [...text.matchAll(/Liste der Gesellschafter - Aufnahme in den Registerordner am (\d\d)\.(\d\d)\.(\d{4})/g)]
+    .map(isoFromGerman).sort()[0];
+  const registered = stated ? isoFromGerman(stated) : fieldDate && firstList === fieldDate ? fieldDate : null;
+  const moved = text.match(/bisher (?:[^,;)]{2,60}, )?Amtsgericht ([^,;)]{2,60}?) (HRB|HRA|GnR) (\d+)(?: ?([A-Z]{1,2})\b)?/);
+  return {
+    ...(registered ? { registered } : {}),
+    ...(!registered && fieldDate ? { seenDate: fieldDate } : {}),
+    ...(firstList ? { firstList } : {}),
+    ...(moved ? { movedFrom: `Amtsgericht ${normaliseCourt(moved[1])} ${moved[2]} ${moved[3]}${moved[4] ? ` ${moved[4]}` : ""}` } : {}),
+    ...(/Umwandlung/.test(text) ? { converted: true } : {}),
+  };
+}
+
+// The first entry at any court, or no date if it cannot be settled from here: a move whose
+// old court cannot be read, or a conversion. `seenDate` is what the page says in those
+// cases. Numbers repeat across courts, so a page must show the number that was asked for.
+export async function readFirstEntry(register, legalName, hops = 2) {
+  const m = parseRegister(register);
+  for (const url of registerPages(register, legalName)) {
+    let page;
+    try {
+      page = await get(url);
+    } catch {
+      await sleep(300);
+      continue;
+    }
+    if (!page.body.includes(`(${m[2]} ${m[3]}`)) continue;
+    const nameOnPage = page.body.match(/<title>\s*Handelsregisterauszug von (.+?)(?: aus .+?)? \(/)?.[1];
+    const read = parseRegisterPage(pageText(page.body));
+    const found = {
+      registerPage: page.url,
+      ...(nameOnPage ? { nameOnPage: decode(nameOnPage) } : {}),
+      ...(read.firstList ? { firstList: read.firstList } : {}),
+    };
+    if (read.converted) return { ...found, converted: true, seenDate: read.registered ?? read.seenDate };
+    if (!read.movedFrom) return read.registered ? { ...found, registered: read.registered } : { ...found, seenDate: read.seenDate };
+    if (hops > 0) {
+      await sleep(PAUSE_MS);
+      const before = await readFirstEntry(read.movedFrom, legalName, hops - 1);
+      if (before.registered) return { ...found, registered: before.registered, registerPage: before.registerPage, movedFrom: read.movedFrom };
+    }
+    return { ...found, movedFrom: read.movedFrom, seenDate: read.registered };
+  }
+  return {};
+}
+
+// What the imprint and the register page add up to: left out with a reason, or proposed,
+// with `problem` saying what a person still has to look at. When a page's date is wrong it
+// is too late, never too early (a move, a conversion, a stale field), and a shareholder
+// list cannot predate the company. So any date before the window rules a company out,
+// even one that could not be trusted to rule it in.
+export function judge(imprint, first, known, windowStart) {
+  if (imprint.foreign) return { why: "the imprint names a company abroad" };
+  if (imprint.register) {
+    const twin = known.registers.get(registerKey(imprint.register));
+    if (twin) return { why: `same register entry as ${twin}` };
+  }
+  const earliest = [first.registered, first.seenDate, first.firstList].filter(Boolean).sort()[0];
+  if (earliest && earliest < windowStart) return { why: `the register page shows ${earliest}, before the window`, registerPage: first.registerPage };
+  const older = olderThanWindow(imprint.register, known.entries, windowStart);
+  if (older) return { why: `register number below ${older.name}'s (registered ${older.registered}), so before the window` };
+  if (!imprint.register) return { problem: imprint.problem ?? "no register entry in the imprint" };
+  if (first.nameOnPage && imprint.legalName && normName(first.nameOnPage) !== normName(imprint.legalName))
+    return { problem: `the register page calls it ${first.nameOnPage}: check it is not an older company`, ...first };
+  if (first.registered) return { registered: first.registered, registerPage: first.registerPage, ...(first.movedFrom ? { movedFrom: first.movedFrom } : {}) };
+  const problem = first.converted ? `converted from another legal form, so the page's date (${first.seenDate}) settles nothing`
+    : first.movedFrom ? `moved from ${first.movedFrom}, and the old court's page has no date`
+    : first.seenDate ? `the register page only has a date field (${first.seenDate}), with nothing to confirm it`
+    : first.registerPage ? "the register page has no date"
+    : "no register page found";
+  return { problem, ...(first.registerPage ? { registerPage: first.registerPage } : {}) };
+}
+
 // ── The dataset ───────────────────────────────────────────────────────────────
 
 const load = (file, varName) =>
@@ -483,29 +628,37 @@ export const seenFile = (updated, seen) => {
 // ── The summary ───────────────────────────────────────────────────────────────
 
 const cell = (s) => String(s ?? "").replace(/\|/g, "\\|");
-const lookUp = (p) => `https://www.northdata.de/?q=${encodeURIComponent(p.legalName || p.name)}`;
+
+// North Data has no search address, only a page per company, so it needs the whole entry.
+const northData = (p) => {
+  const m = String(p.register ?? "").match(/^Amtsgericht (.+)$/);
+  if (!m || !p.legalName || !p.city) return "";
+  const plus = (t) => encodeURIComponent(t).replace(/%20/g, "+");
+  return `https://www.northdata.de/${plus(p.legalName)},+${plus(p.city)}/Amtsgericht+${plus(m[1])}`;
+};
 
 export function renderReport({ today, proposals, heldBack, leftOut, read, known }) {
   const links = (p) => [
     p.website && `[site](${p.website})`,
     p.imprint && `[imprint](${p.imprint})`,
     `[article](${p.article})`,
-    `[North Data](${lookUp(p)})`,
+    p.registerPage && `[register page](${p.registerPage})`,
+    northData(p) && `[North Data](${northData(p)})`,
   ].filter(Boolean).join(" · ");
-  const ready = proposals.filter(p => p.register);
-  const look = proposals.filter(p => !p.register);
+  const ready = proposals.filter(p => p.register && p.registered);
+  const look = proposals.filter(p => !(p.register && p.registered));
   const out = [];
   out.push(proposals.length
     ? `The finder read the startup press on ${today} and proposes **${proposals.length} ${proposals.length === 1 ? "lead" : "leads"}**. A lead is only a name: nothing joins the list of startups until someone has checked it.`
     : `The finder read the startup press on ${today} and found nothing new.`, "");
   if (ready.length) {
-    out.push("### Ready to check", "", "The imprint names a register entry. The first-entry date is the one thing left to look up.", "");
-    out.push("| Startup | Sector guess | City | Legal entity | Register | Links |", "|---|---|---|---|---|---|");
-    for (const p of ready) out.push(`| **${cell(p.name)}** | ${p.sector}${p.strong ? "" : " (weak)"} | ${cell(p.city)} | ${cell(p.legalName)} | ${cell(p.register)} | ${links(p)} |`);
+    out.push("### Ready to check", "", "The imprint names a register entry, and its first entry falls inside the window. Left to check: that it is a new, independent technology company, and one independent source.", "");
+    out.push("| Startup | Sector guess | City | Legal entity | Register | First entry | Links |", "|---|---|---|---|---|---|---|");
+    for (const p of ready) out.push(`| **${cell(p.name)}** | ${p.sector}${p.strong ? "" : " (weak)"} | ${cell(p.city)} | ${cell(p.legalName)} | ${cell(p.register)} | ${p.registered}${p.movedFrom ? " (moved seat)" : ""} | ${links(p)} |`);
     out.push("");
   }
   if (look.length) {
-    out.push("### Needs a look", "", "The finder could not tie these to a register entry. A person can often see in a minute what it could not.", "");
+    out.push("### Needs a look", "", "The finder could not settle these. A person can often see in a minute what it could not.", "");
     out.push("| Startup | Sector guess | City | Why | Links |", "|---|---|---|---|---|");
     for (const p of look) out.push(`| **${cell(p.name)}** | ${p.sector}${p.strong ? "" : " (weak)"} | ${cell(p.city)} | ${cell(p.problem)} | ${links(p)} |`);
     out.push("");
@@ -514,7 +667,7 @@ export function renderReport({ today, proposals, heldBack, leftOut, read, known 
   if (proposals.length) {
     out.push("### Reviewing this", "",
       "This pull request is rewritten by the next run, so finish it before then. For each lead in `data/companies/new-startups.review.js`:", "",
-      "1. Look up the first-entry date on the [Registerportal](https://www.handelsregister.de) or North Data.",
+      "1. Confirm the first-entry date: the register page linked here, or the [Registerportal](https://www.handelsregister.de) for anything under *Needs a look*.",
       "2. Do the rest of the five-step check in [NEW-STARTUPS.md](../blob/main/NEW-STARTUPS.md).",
       "3. If it passes, add it to `new-startups.js` and remove the lead. If it fails, move it to `rejected` with the reason.",
       "4. Delete a lead that is plainly wrong. It will not be proposed again.", "",
@@ -598,30 +751,26 @@ async function main() {
     else candidates.push({ ...c, ...scope });
   }
 
-  // 3. Read each one's imprint. Mission-first, so a slow site costs the weak names.
+  // 3. Read each one's imprint and register page. Mission-first, so a slow site costs the weak names.
   const assessed = [];
   const remembered = [];
   candidates.sort((a, b) => b.strong - a.strong);
   for (const c of candidates) {
     const imprint = c.website ? await readImprint(c.website) : { problem: "the article links no website" };
-    process.stderr.write(`  ${c.name}: ${imprint.register ?? imprint.problem ?? "read"}\n`);
-    const older = olderThanWindow(imprint.register, known.entries, windowStart);
-    const twin = imprint.register && known.registers.get(registerKey(imprint.register));
-    const why = imprint.foreign ? "the imprint names a company abroad"
-      : twin ? `same register entry as ${twin}`
-      : older ? `register number below ${older.name}'s (registered ${older.registered}), so before the window`
-      : null;
-    if (why) {
-      leftOut.push({ ...c, why });
-      remembered.push({ name: c.name, host: hostOf(c.website), found: today, outcome: why, source: c.article });
+    const first = imprint.register ? await readFirstEntry(imprint.register, imprint.legalName) : {};
+    const verdict = judge(imprint, first, known, windowStart);
+    process.stderr.write(`  ${c.name}: ${verdict.why ?? verdict.registered ?? verdict.problem}\n`);
+    if (verdict.why) {
+      leftOut.push({ ...c, why: verdict.why });
+      remembered.push({ name: c.name, host: hostOf(c.website), found: today, outcome: verdict.why, source: c.article });
     } else {
-      assessed.push({ ...c, ...imprint, city: imprint.city || cityFromText(c.text) });
+      assessed.push({ ...c, ...imprint, ...verdict, city: imprint.city || cityFromText(c.text) });
     }
     if (c.website) await sleep(PAUSE_MS);
   }
 
-  // 4. Best first: mission over weak, a readable register over none, newest first.
-  assessed.sort((a, b) => b.strong - a.strong || !!b.register - !!a.register || b.published.localeCompare(a.published));
+  // 4. Best first: mission over weak, a settled date over none, a register over none, newest first.
+  assessed.sort((a, b) => b.strong - a.strong || !!b.registered - !!a.registered || !!b.register - !!a.register || b.published.localeCompare(a.published));
   const proposals = assessed.slice(0, MAX_PROPOSALS);
   const heldBack = assessed.length - proposals.length;
 
@@ -633,12 +782,14 @@ async function main() {
     const leads = proposals.map(p => ({
       name: p.name,
       ...(p.city ? { city: p.city } : {}),
-      note: `sector guess: ${p.sector}; from ${p.source}`,
+      note: `sector guess: ${p.sector}; from ${p.source}${p.problem ? `; ${p.problem}` : ""}`,
       ...(p.website ? { website: p.website } : {}),
       source: p.article,
       found: today,
       ...(p.legalName ? { legalName: p.legalName } : {}),
       ...(p.register ? { register: p.register } : {}),
+      ...(p.registered ? { registered: p.registered } : {}),
+      ...(p.registerPage ? { registerPage: p.registerPage } : {}),
       ...(p.imprint ? { imprint: p.imprint } : {}),
     }));
     const reviewPath = join(ROOT, REVIEW_FILE);

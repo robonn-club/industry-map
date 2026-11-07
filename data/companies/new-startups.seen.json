@@ -1,4 +1,17 @@
 {
   "updated": "2026-11-07",
-  "seen": []
+  "seen": [
+    {"name":"MuRay","host":"muray.tech","found":"2026-11-07","outcome":"proposed","source":"https://www.hamburg-startups.net/millionenschwere-finanzierungsrunden-fuer-muray-und-hansetherm/"},
+    {"name":"hansetherm","host":"hansetherm.de","found":"2026-11-07","outcome":"proposed","source":"https://www.hamburg-startups.net/millionenschwere-finanzierungsrunden-fuer-muray-und-hansetherm/"},
+    {"name":"Rabot Energy","host":"rabot.energy","found":"2026-11-07","outcome":"proposed","source":"https://www.hamburg-startups.net/rabot-energy-erhaelt-50-millionen-euro-in-finanzierungsrunde/"},
+    {"name":"goodBytz","host":"goodbytz.com","found":"2026-11-07","outcome":"proposed","source":"https://www.hamburg-startups.net/goodbytz-bringt-roboterkueche-an-den-frankfurter-flughafen/"},
+    {"name":"Procuros","host":"procuros.io","found":"2026-11-07","outcome":"proposed","source":"https://www.hamburg-startups.net/20-millionen-euro-fuer-procuros-in-neuer-finanzierungsrunde/"},
+    {"name":"Infineon","host":"infineon.com","found":"2026-11-07","outcome":"register number below TYTAN Technologies's (registered 2023-09-26), so before the window","source":"https://roboticsandautomationnews.com/2026/10/22/infineon-names-winners-of-humanoid-robotics-startup-challenge/106216/"},
+    {"name":"elementarhy","host":"elementarhy.com","found":"2026-11-07","outcome":"proposed","source":"https://startupcity.hamburg/news-events/stories/elementarhy-makes-green-hydrogen-cheaper"},
+    {"name":"Hofer Photonics","host":"hofer-photonics.com","found":"2026-11-07","outcome":"proposed","source":"https://startupcity.hamburg/startups-ecosystem/hofer-photonics-gmbh"},
+    {"name":"fiberior","host":"fiberior.de","found":"2026-11-07","outcome":"proposed","source":"https://isb.rlp.de/home/detailansicht/isb-beteiligt-sich-an-der-fiberior-gmbh.html"},
+    {"name":"Uniform Robotics","host":"uniform-studio.eu","found":"2026-11-07","outcome":"proposed","source":"https://startupcity.hamburg/startups-ecosystem/uniform-robotics-gmbh"},
+    {"name":"Batteriepasswerk","host":"batteriepasswerk.com","found":"2026-11-07","outcome":"proposed","source":"https://startupcity.hamburg/startups-ecosystem/batteriepasswerk"},
+    {"name":"Termalio","host":"termalio.de","found":"2026-11-07","outcome":"proposed","source":"https://startupcity.hamburg/startups-ecosystem/termalio"}
+  ]
 }

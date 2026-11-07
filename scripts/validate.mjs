@@ -209,10 +209,11 @@ fresh.forEach((e, i) => {
   const at = `${REVIEW_FILE} leads[${i}] ${l?.name ?? "(no name)"}`;
   if (!l.name) errors.push(`${at}: missing name`);
   if (!l.city && !l.source) errors.push(`${at}: needs a city or a source`);
-  for (const k of ["website", "source", "imprint"])
+  for (const k of ["website", "source", "imprint", "registerPage"])
     if (l[k] !== undefined && !/^https?:\/\//.test(l[k])) errors.push(`${at}: "${k}" must be an http(s) url`);
   if (l.register !== undefined && !REGISTER.test(l.register)) errors.push(`${at}: register "${l.register}" is not "Amtsgericht <court> HRB <number>"`);
   if (l.found !== undefined && !isDay(l.found)) errors.push(`${at}: "found" must be YYYY-MM-DD`);
+  if (l.registered !== undefined && !isDay(l.registered)) errors.push(`${at}: "registered" must be YYYY-MM-DD`);
   const key = (l.name ?? "").toLowerCase().trim();
   if (seen.has(key)) errors.push(`${at}: already on the map (${seen.get(key)}) — remove the lead`);
   if (rejectedNames.has(key)) errors.push(`${at}: also on the rejected list — keep it in one place`);

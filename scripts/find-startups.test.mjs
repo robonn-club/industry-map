@@ -9,8 +9,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  SOURCES, addLeads, cityFromText, classify, inlineText, normName, normaliseCourt, olderThanWindow, pageText,
-  parseImprint, readColumn, readTitleLinks, renderReport, robotsAllow, seenFile, soundsForeign, statedFounding,
+  SOURCES, addLeads, cityFromText, classify, inlineText, judge, normName, normaliseCourt, olderThanWindow, pageText,
+  parseImprint, parseRegisterPage, readColumn, readTitleLinks, registerPages, renderReport, robotsAllow, seenFile,
+  soundsForeign, statedFounding,
 } from "./find-startups.mjs";
 
 const COLUMN = {
@@ -115,6 +116,15 @@ test("a number on its own line does not take the next line's letter as a suffix"
   assert.equal(parseImprint("Foo GmbH\nAmtsgericht München\nHRB 315627\nD").number, "HRB 315627");
 });
 
+test("words from the sentence around a court are not a court", () => {
+  assert.equal(parseImprint("Foo GmbH\nRegister court: Commercial register HRB 53947").register, undefined);
+  assert.equal(parseImprint("Foo GmbH\nAmtsgericht Local Court HRB 53947").register, undefined);
+});
+
+test("Bremen's letters are read with the number", () => {
+  assert.equal(parseImprint("Foo UG\nAmtsgericht Bremen HRB 41502 HB").register, "Amtsgericht Bremen HRB 41502 HB");
+});
+
 test("the legal name is cleaned of what surrounds it on the page", () => {
   const nameOf = (line) => parseImprint(`${line}\nMusterweg 1\n10115 Berlin\nAmtsgericht Charlottenburg HRB 1000 B`).legalName;
   assert.equal(nameOf("Impressum — RM Werk GmbH"), "RM Werk GmbH");
@@ -174,6 +184,69 @@ test("a register number below a pre-window one is older than the window", () => 
   assert.equal(olderThanWindow(undefined, known, at), null);
 });
 
+test("a register entry's page is addressed by state, court and number", () => {
+  const base = "https://www.online-handelsregister.de/handelsregisterauszug";
+  assert.deepEqual(registerPages("Amtsgericht Hamburg HRB 199171"), [`${base}/hh/Hamburg/HRB/199171`]);
+  assert.deepEqual(registerPages("Amtsgericht München HRB 1"), [`${base}/by/Muenchen/HRB/1`]);
+  assert.deepEqual(registerPages("Amtsgericht Frankfurt am Main HRB 1"), [`${base}/he/Frankfurt-am-Main/HRB/1`]);
+  assert.deepEqual(registerPages("Amtsgericht Frankfurt (Oder) HRB 1"), [`${base}/br/Frankfurt-Oder/HRB/1FF`, `${base}/br/Frankfurt-Oder/HRB/1`]);
+  assert.deepEqual(registerPages("Amtsgericht Kiel HRB 28535 KI"), [`${base}/sh/Kiel/HRB/28535KI`, `${base}/sh/Kiel/HRB/28535`]);
+  assert.deepEqual(registerPages("Amtsgericht Kempten (Allgäu) HRB 1"), [`${base}/by/Kempten/HRB/1`]);
+  assert.deepEqual(registerPages("Amtsgericht Charlottenburg (Berlin) HRB 260878 B", "SKD SE"), [
+    `${base}/be/Berlin-Charlottenburg/HRB/260878B`, `${base}/be/Berlin-Charlottenburg/HRB/260878`, `${base}/be/Berlin-Charlottenburg/HRB/260878/SKD-SE`,
+  ]);
+  assert.equal(registerPages("Amtsgericht Traunstein HRB 31965", "DeepSynergy.AI GmbH").at(-1), `${base}/by/Traunstein/HRB/31965/DeepSynergyAI-GmbH`);
+  assert.equal(registerPages("Amtsgericht Foo UG HRB 1", "Bar UG (haftungsbeschränkt)").length, 0, "a court not in the list has no page");
+  assert.deepEqual(registerPages(undefined), []);
+});
+
+test("a register page gives a date only where it states one or two facts agree", () => {
+  const stated = "Die Ersteintragung von Foo GmbH ins\nHandelsregister erfolgte am 10.09.2024. Gründungsdatum: 10.09.2024";
+  assert.equal(parseRegisterPage(stated).registered, "2024-09-10");
+  assert.equal(parseRegisterPage("Neueintragung vom 15.05.2026 (Eintrag Nr. 1)").registered, "2026-05-15");
+  const list = (d) => `Liste der Gesellschafter - Aufnahme in den Registerordner am ${d} 29,80 €`;
+  assert.equal(parseRegisterPage(`Gründungsdatum: 02.07.2024 ${list("02.07.2024")}`).registered, "2024-07-02", "field and first list agree");
+  const zepta = parseRegisterPage(`Gründungsdatum: 06.02.2025 ${list("02.02.2026")} ${list("21.11.2024")}`);
+  assert.equal(zepta.registered, undefined, "the first list exposes a wrong field");
+  assert.equal(zepta.seenDate, "2025-02-06");
+  assert.equal(zepta.firstList, "2024-11-21");
+  assert.equal(parseRegisterPage("Gründungsdatum: 07.11.2023").registered, undefined, "a field alone settles nothing");
+});
+
+test("a register page shows a move and a conversion", () => {
+  assert.equal(parseRegisterPage("Sitz, bisher Düsseldorf, Amtsgericht Düsseldorf HRB 110642) beschlossen").movedFrom, "Amtsgericht Düsseldorf HRB 110642");
+  assert.equal(parseRegisterPage("(bisher Amtsgericht Duisburg HRB 36807 ) nach Moers").movedFrom, "Amtsgericht Duisburg HRB 36807");
+  assert.equal(parseRegisterPage("Firma, bisher Foo GmbH, geändert").movedFrom, undefined, "an old name is not a move");
+  assert.equal(parseRegisterPage("Umwandlungsvertrag vom 07.05.2025").converted, true);
+});
+
+test("judge: what rules a company out, and what still needs a person", () => {
+  const known = { registers: new Map([["Amtsgericht Bonn HRB 7", "Twin"]]), entries: [{ name: "Old", register: "Amtsgericht Bonn HRB 500", registered: "2020-01-01" }] };
+  const window = "2023-11-07";
+  const imprint = { register: "Amtsgericht Bonn HRB 900", legalName: "Foo GmbH" };
+  const out = (i, f) => judge(i, f, known, window);
+
+  assert.match(out({ foreign: true }, {}).why, /abroad/);
+  assert.match(out({ register: "Amtsgericht Bonn HRB 7" }, {}).why, /same register entry as Twin/);
+  assert.match(out({ register: "Amtsgericht Bonn HRB 7 B" }, {}).why, /Twin/, "the court's letter does not hide a twin");
+  assert.match(out({ register: "Amtsgericht Bonn HRB 400" }, {}).why, /below Old's/);
+
+  assert.match(out(imprint, { registered: "2023-10-05" }).why, /2023-10-05, before the window/);
+  assert.match(out(imprint, { seenDate: "2021-06-29" }).why, /before the window/, "a date too old to be trusted is still too old");
+  assert.match(out(imprint, { seenDate: "2024-04-05", firstList: "2023-09-18", converted: true }).why, /2023-09-18/, "a list cannot predate the company");
+
+  assert.deepEqual(out(imprint, { registered: "2025-05-27", registerPage: "https://x/" }), { registered: "2025-05-27", registerPage: "https://x/" });
+  assert.equal(out(imprint, { registered: "2025-10-22", registerPage: "https://x/", movedFrom: "Amtsgericht Y HRB 1" }).movedFrom, "Amtsgericht Y HRB 1");
+
+  assert.match(out(imprint, { registered: "2025-01-01", nameOnPage: "CS Company Shield GmbH" }).problem, /calls it CS Company Shield/, "a different name may be an older company");
+  assert.equal(out(imprint, { registered: "2025-01-01", nameOnPage: "foo gmbh" }).registered, "2025-01-01");
+  assert.match(out(imprint, { converted: true, seenDate: "2025-08-27" }).problem, /converted/);
+  assert.match(out(imprint, { movedFrom: "Amtsgericht Y HRB 1", seenDate: "2025-12-31" }).problem, /moved from/);
+  assert.match(out(imprint, { seenDate: "2024-09-02" }).problem, /only has a date field/);
+  assert.match(out(imprint, {}).problem, /no register page/);
+  assert.match(out({ problem: "the imprint could not be read" }, {}).problem, /could not be read/);
+});
+
 const ROBOTS = `
 # As a condition of accessing this website...
 User-agent: *
@@ -231,7 +304,8 @@ test("the summary sorts leads by what is left to do and copies no article text",
   const report = renderReport({
     today: "2026-11-15",
     proposals: [
-      { ...base, name: "Ready", legalName: "Ready GmbH", register: "Amtsgericht Bonn HRB 1", imprint: "https://a.example/impressum" },
+      { ...base, name: "Ready", legalName: "Ready GmbH", register: "Amtsgericht Bonn HRB 1", registered: "2025-05-27", registerPage: "https://r.example/1", imprint: "https://a.example/impressum" },
+      { ...base, name: "Dated later", legalName: "Dated GmbH", register: "Amtsgericht Bonn HRB 2", problem: "the register page only has a date field (2024-09-02), with nothing to confirm it" },
       { ...base, name: "Unclear", strong: false, sector: "ai_ml", problem: "the imprint could not be read" },
     ],
     heldBack: 2,
@@ -240,7 +314,10 @@ test("the summary sorts leads by what is left to do and copies no article text",
     known: 5,
   });
   assert.ok(report.indexOf("Ready to check") < report.indexOf("Needs a look"));
-  assert.match(report, /\*\*Ready\*\* \| robotics \| Bonn \| Ready GmbH \| Amtsgericht Bonn HRB 1/);
+  assert.match(report, /\*\*Ready\*\* \| robotics \| Bonn \| Ready GmbH \| Amtsgericht Bonn HRB 1 \| 2025-05-27/);
+  assert.match(report, /\[register page\]\(https:\/\/r\.example\/1\)/);
+  assert.match(report, /northdata\.de\/Ready\+GmbH,\+Bonn\/Amtsgericht\+Bonn\+HRB\+1\)/, "North Data has a page per company, not a search address");
+  assert.ok(report.indexOf("Dated later") > report.indexOf("Needs a look"), "a register number without a settled date needs a person");
   assert.match(report, /\*\*Unclear\*\* \| ai_ml \(weak\)/);
   assert.match(report, /2 more were held back/);
   assert.match(report, /could not be read \(HTTP 500\)/);
