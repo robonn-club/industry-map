@@ -40,6 +40,12 @@ jobs:
       - name: Check the dataset still validates with them
         run: node scripts/validate.mjs
 
+      # On the run's page as well, so which sources could be read is visible even when
+      # there is nothing to propose and no pull request opens.
+      - name: Put the summary on the run's page
+        if: always()
+        run: if [ -f proposals.md ]; then cat proposals.md >> "$GITHUB_STEP_SUMMARY"; fi
+
       - name: Open or update the pull request
         uses: peter-evans/create-pull-request@v8
         with:

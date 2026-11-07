@@ -392,63 +392,270 @@ const NEW_STARTUP_REVIEW = {
       checked: "2026-10-05",
       source: "https://www.northdata.de/Yellow-TS+UG,+Frankfurt+a.+Main/Amtsgericht+Frankfurt+am+Main+HRB+123329",
       note: "The imprint on nomadic-drones.com names Yellow-TS UG, registered 2021."
+    },
+    {
+      name: "revel8",
+      reason: "before-window",
+      legalName: "revel8 GmbH",
+      register: "Amtsgericht München HRB 287782",
+      registered: "2023-10-05",
+      checked: "2026-11-07",
+      source: "https://www.online-handelsregister.de/handelsregisterauszug/by/Muenchen/HRB/287782",
+      note: "A month before the window opened; the register page still names it CS Company Shield GmbH."
+    },
+    {
+      name: "DeepSynergy.AI",
+      reason: "before-window",
+      legalName: "DeepSynergy.AI GmbH",
+      register: "Amtsgericht Traunstein HRB 31965",
+      registered: "2023-05-26",
+      checked: "2026-11-07",
+      source: "https://www.online-handelsregister.de/handelsregisterauszug/by/Traunstein/HRB/31965"
+    },
+    {
+      name: "Inline Process Solutions",
+      reason: "before-window",
+      legalName: "Inline Process Solutions GmbH",
+      register: "Amtsgericht Kaiserslautern HRB 33787",
+      registered: "2023-10-10",
+      checked: "2026-11-07",
+      source: "https://www.online-handelsregister.de/handelsregisterauszug/rp/Kaiserslautern/HRB/33787"
+    },
+    {
+      name: "Marble Imaging",
+      reason: "before-window",
+      legalName: "Marble Imaging GmbH",
+      register: "Amtsgericht Bremen HRB 41893 HB",
+      checked: "2026-11-07",
+      source: "https://www.online-handelsregister.de/handelsregisterauszug/hb/Bremen/HRB/41893HB",
+      note: "Says it was founded in August 2023, and its first shareholder list is dated 18 September 2023. The register page's April 2024 date is later than that, so it cannot be the first entry."
+    },
+    {
+      name: "Astrait",
+      reason: "before-window",
+      legalName: "ASTRAIT UG (haftungsbeschränkt)",
+      register: "Amtsgericht Bremen HRB 36985 HB",
+      checked: "2026-11-07",
+      source: "https://www.starthaus-bremen.de/en/page/media-centre/success-stories/astrait-esa",
+      note: "Started in 2021 as Levity Space; the register page's date field says June 2021."
+    },
+    {
+      name: "goodBytz",
+      reason: "before-window",
+      legalName: "GoodBytz GmbH",
+      register: "Amtsgericht Hamburg HRB 171538",
+      registered: "2021-10-19",
+      checked: "2026-11-07",
+      source: "https://www.online-handelsregister.de/handelsregisterauszug/hh/Hamburg/HRB/171538"
+    },
+    {
+      name: "Procuros",
+      reason: "before-window",
+      legalName: "Procuros GmbH",
+      register: "Amtsgericht Hamburg HRB 169672",
+      registered: "2021-06-28",
+      checked: "2026-11-07",
+      source: "https://www.online-handelsregister.de/handelsregisterauszug/hh/Hamburg/HRB/169672"
+    },
+    {
+      name: "hansetherm",
+      reason: "not-new",
+      legalName: "hansetherm GmbH",
+      register: "Amtsgericht Hamburg HRB 174065",
+      checked: "2026-11-07",
+      source: "https://www.online-handelsregister.de/handelsregisterauszug/hh/Hamburg/HRB/174065",
+      note: "Its register entry dates from March 2022, under the name KLT Health Services GmbH."
+    },
+    {
+      name: "Rabot Energy",
+      reason: "not-new",
+      legalName: "RABOT Energy DE GmbH",
+      register: "Amtsgericht Hamburg HRB 194021",
+      checked: "2026-11-07",
+      source: "https://www.htgf.de/en/portfolio/htgffamily/rabot-energy/",
+      note: "Founded in 2021 as Rabot Charge; this entity came out of a conversion in 2025."
+    },
+    {
+      name: "Digid",
+      reason: "before-window",
+      legalName: "digid GmbH",
+      register: "Amtsgericht Mainz HRB 50564",
+      checked: "2026-11-07",
+      source: "https://www.online-handelsregister.de/handelsregisterauszug/rp/Mainz/HRB/50564",
+      note: "Moved from Frankfurt, where it was entered in March 2021 under another name."
+    },
+    {
+      name: "TENTA VISION",
+      reason: "before-window",
+      checked: "2026-11-07",
+      source: "https://www.hochschule-trier.de/hochschule/aktuelles/news-und-pressemitteilungen/news-detail/erfolgreiche-wissenschaftliche-ausgruendung-an-der-hochschule-trier",
+      note: "Founded in autumn 2022."
+    },
+    {
+      name: "Bareways",
+      reason: "before-window",
+      legalName: "Bareways GmbH",
+      register: "Amtsgericht Lübeck HRB 19028 HL",
+      registered: "2019-06-28",
+      checked: "2026-11-07",
+      source: "https://www.online-handelsregister.de/handelsregisterauszug/sh/Luebeck/HRB/19028HL"
+    },
+    {
+      name: "HEIONTEC",
+      reason: "before-window",
+      legalName: "HEIONIT GmbH",
+      register: "Amtsgericht Lübeck HRB 23116 HL",
+      checked: "2026-11-07",
+      source: "https://www.online-handelsregister.de/handelsregisterauszug/sh/Luebeck/HRB/23116HL",
+      note: "The register page's date field says November 2022."
+    },
+    {
+      name: "Flucto",
+      reason: "before-window",
+      legalName: "Flucto GmbH",
+      register: "Amtsgericht Bremen HRB 36239 HB",
+      registered: "2020-11-24",
+      checked: "2026-11-07",
+      source: "https://www.online-handelsregister.de/handelsregisterauszug/hb/Bremen/HRB/36239HB"
+    },
+    {
+      name: "thermal DRONES",
+      reason: "before-window",
+      legalName: "thermal DRONES GmbH",
+      register: "Amtsgericht Stralsund HRB 21335",
+      registered: "2020-08-31",
+      checked: "2026-11-07",
+      source: "https://www.online-handelsregister.de/handelsregisterauszug/mv/Stralsund/HRB/21335"
+    },
+    {
+      name: "Warmwind",
+      reason: "before-window",
+      legalName: "Warmwind AG",
+      register: "Amtsgericht Jena HRB 519308",
+      checked: "2026-11-07",
+      source: "https://www.online-handelsregister.de/handelsregisterauszug/th/Jena/HRB/519308",
+      note: "The register page's date field says March 2022; it was renamed from eva AG in 2025."
+    },
+    {
+      name: "Quantum Optics Jena",
+      reason: "before-window",
+      checked: "2026-11-07",
+      source: "https://www.iof.fraunhofer.de/en/pressrelease/2021/quantum-optics-jena.html",
+      note: "Spun out of Fraunhofer IOF in 2020."
+    },
+    {
+      name: "Voodin Blade Technology",
+      reason: "before-window",
+      checked: "2026-11-07",
+      source: "https://electrek.co/2024/05/03/german-startup-pioneering-recyclable-wooden-wind-turbine-blades/",
+      note: "Founded in 2021."
+    },
+    {
+      name: "Lumeox",
+      reason: "out-of-scope",
+      legalName: "Lumeox GmbH",
+      register: "Amtsgericht Lübeck HRB 24934 HL",
+      registered: "2024-05-06",
+      checked: "2026-11-07",
+      source: "https://lumeox.health/en/about/",
+      note: "Blood analysis for emergency medicine: medtech."
     }
   ],
   // Named in a source as a young German tech startup, but not yet checked. The next
   // review pass starts here. scripts/find-startups.mjs adds to the end of this list, with
   // whatever it could find: `source` is the article, `imprint` and `register` what the
-  // company's own imprint says (unconfirmed until the five-step check), `note` its guess
-  // at the sector. It expects this array to stay the last thing in the file.
+  // company's own imprint says, `registered` and `registerPage` the first entry where a
+  // public mirror settled it (all unconfirmed until the five-step check), `note` its guess
+  // at the sector and what is still open. It expects this array to stay the last thing in the file.
   leads: [
-    {
-      name: "Marble Imaging",
-      city: "Bremen",
-      note: "earth observation; seed round reported"
-    },
-    {
-      name: "Astrait",
-      city: "Bremen",
-      note: "space missions for mid-sized companies"
-    },
     {
       name: "Project-S",
       city: "Munich",
-      note: "space safety and orbital intelligence"
+      note: "space safety and orbital intelligence; says it is Project-S Space and Beyond Technologies GmbH, founded in 2024, but its imprint could not be read and no register page turned up",
+      source: "https://www.munich-startup.de/en/news/millions-in-funding-for-project-s"
     },
     {
       name: "disait",
-      city: "Düsseldorf",
-      note: "collaborative robot for clay plastering"
-    },
-    {
-      name: "Delta Charge",
-      city: "Berlin",
-      note: "battery-backed truck-charging depots"
-    },
-    {
-      name: "DeepSynergy.AI",
-      city: "Munich",
-      note: "AI planning and scheduling (TUM Venture Labs)"
-    },
-    {
-      name: "LINK2AI",
-      city: "Saarbrücken",
-      note: "monitoring for LLM applications (CISPA)"
+      city: "Bottrop",
+      note: "collaborative robot for clay plastering; register entry read, but no company website found yet, so no imprint to tie it to",
+      source: "https://www.umweltwirtschaft.nrw.de/nachrichten/details/26-zukunftstechnologien-aus-nordrhein-westfalen-erhalten-rueckenwind-136-millionen-euro-foerderung-fuer-gruene-start-ups-durch-land-nordrhein-westfalen-und-eu",
+      legalName: "disait - Design in Science and in Technology GmbH",
+      register: "Amtsgericht Gelsenkirchen HRB 19987",
+      registered: "2026-07-17",
+      registerPage: "https://www.online-handelsregister.de/handelsregisterauszug/nw/Gelsenkirchen/HRB/19987"
     },
     {
       name: "Reware Labs",
       city: "Saarbrücken",
-      note: "AI software security (CISPA)"
-    },
-    {
-      name: "revel8",
-      city: "Saarbrücken",
-      note: "social-engineering simulations (CISPA)"
+      note: "AI software security (CISPA); the imprint gives no register number yet",
+      website: "https://rewarelabs.com",
+      source: "https://cispa.de/cispa-startups",
+      imprint: "https://rewarelabs.com/imprint/"
     },
     {
       name: "CyberTide",
       city: "Saarbrücken",
-      note: "data-security platform (CISPA)"
+      note: "self-hosted data-security platform (CISPA); website and imprint not found yet",
+      source: "https://cispa.de/en/interview-cybertide"
+    },
+    {
+      name: "elementarhy",
+      city: "Hamburg",
+      note: "sector guess: industrial; hydrogen technology, a spin-off of the Leibniz Institute for Plasma Research in Greifswald; the register page only has a date field (2024-09-02), with nothing to confirm it",
+      website: "https://elementarhy.com",
+      source: "https://startupcity.hamburg/news-events/stories/elementarhy-makes-green-hydrogen-cheaper",
+      found: "2026-11-07",
+      legalName: "elementarhy GmbH",
+      register: "Amtsgericht Hamburg HRB 188418",
+      registerPage: "https://www.online-handelsregister.de/handelsregisterauszug/hh/Hamburg/HRB/188418",
+      imprint: "https://elementarhy.com/imprint/"
+    },
+    {
+      name: "Hofer Photonics",
+      city: "Hamburg",
+      note: "sector guess: industrial; laser technology for real-time material analysis; the register page only has a date field (2024-07-29), with nothing to confirm it",
+      website: "https://hofer-photonics.com",
+      source: "https://startupcity.hamburg/startups-ecosystem/hofer-photonics-gmbh",
+      found: "2026-11-07",
+      legalName: "Hofer Photonics GmbH",
+      register: "Amtsgericht Hamburg HRB 187917",
+      registerPage: "https://www.online-handelsregister.de/handelsregisterauszug/hh/Hamburg/HRB/187917",
+      imprint: "https://www.hofer-photonics.com/imprint.html"
+    },
+    {
+      name: "fiberior",
+      city: "Neustadt an der Weinstraße",
+      note: "sector guess: industrial; fibre-reinforced thermoplastic parts; moved from Kaiserslautern in 2025, so the first entry is at another court, and no register page turned up",
+      website: "https://fiberior.de",
+      source: "https://isb.rlp.de/home/detailansicht/isb-beteiligt-sich-an-der-fiberior-gmbh.html",
+      found: "2026-11-07",
+      legalName: "fiberior GmbH",
+      register: "Amtsgericht Ludwigshafen am Rhein HRB 70563",
+      imprint: "https://fiberior.de/imprint"
+    },
+    {
+      name: "Uniform Robotics",
+      city: "Hamburg",
+      note: "sector guess: robotics; machine-safety compliance for industrial robots and humanoids; its site blocks automated reads and no register entry turned up",
+      website: "https://www.uniform-studio.eu/de",
+      source: "https://startupcity.hamburg/startups-ecosystem/uniform-robotics-gmbh",
+      found: "2026-11-07"
+    },
+    {
+      name: "Batteriepasswerk",
+      city: "Hamburg",
+      note: "sector guess: industrial; listed under Energy, established 2026; the imprint gives no register number yet",
+      website: "https://www.batteriepasswerk.com",
+      source: "https://startupcity.hamburg/startups-ecosystem/batteriepasswerk",
+      found: "2026-11-07"
+    },
+    {
+      name: "Termalio",
+      city: "Hamburg",
+      note: "sector guess: industrial; listed under Energy, established 2026; the imprint gives no register number yet",
+      website: "https://termalio.de",
+      source: "https://startupcity.hamburg/startups-ecosystem/termalio",
+      found: "2026-11-07"
     }
   ]
 };

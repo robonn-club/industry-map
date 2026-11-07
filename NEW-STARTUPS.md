@@ -79,7 +79,8 @@ plays here. Checked October 2026.
 |---|---|---|---|---|
 | **Handelsregister** ([Registerportal](https://www.handelsregister.de)) | Every German company, complete and authoritative: legal name, court and number, seat, registration and deletion | Free web search and printouts since August 2022. **No API, no bulk download.** Capped at 60 retrievals per hour; the portal's FAQ warns that automated mass retrieval can be a criminal offence (§§ 303a, 303b StGB) and it is regularly overloaded | Register facts are public. Bulk extraction is ruled out by the cap | **Authoritative check of every entry.** Looked up one company at a time. Never scraped |
 | EU high-value datasets ([Reg. (EU) 2023/138](https://eur-lex.europa.eu/legal-content/DE/ALL/?uri=CELEX%3A32023R0138)) | Would require free API and bulk access to company-register data since June 2024 | Germany has **not** published one; an [IFG request](https://fragdenstaat.de/anfrage/antrag-nach-ss-1-informationsfreiheitsgesetz-ifg-umsetzung-von-ss-9-dng-vo-eu-2023-138-fuer-das-unternehmensregister/) asking when was still unanswered in September 2026 | Would be open (CC BY 4.0 or freer) | None yet. **Would change everything:** with a bulk feed, every new registration could be screened automatically |
-| [North Data](https://www.northdata.de) | Mirror of the register's publications: first registration, seat and name history, deletions, insolvencies | Free page views; paid data service | No reuse licence for the database | **Convenient view of the register entry.** Each entry links its North Data page *and* names court + number, so the fact can be checked on the Registerportal itself |
+| [North Data](https://www.northdata.de) | Mirror of the register's publications: first registration, seat and name history, deletions, insolvencies | Free page views; paid data service | No reuse licence for the database | **Convenient view of the register entry.** Each entry from October 2026 links its North Data page *and* names court + number, so the fact can be checked on the Registerportal itself. It answers automated readers with HTTP 429, so it is for people |
+| [online-handelsregister.de](https://www.online-handelsregister.de) | A public page per company, built from the register: first entry, moves of seat, filed documents | Free page views (it sells the documents). Its robots.txt allows automated readers | Facts with a link | **First-entry date, for the finder and for review.** A mirror, not the register, with two traps: see [below](#new-names-every-two-weeks) |
 | [OffeneRegister.de](https://offeneregister.de) (OKF / OpenCorporates) | 5.1 million companies from the register's publications | Open download | Open data | None: a snapshot from February 2019, never updated, so nothing in the window |
 | [OpenCorporates](https://opencorporates.com) | German register data among 140+ jurisdictions | API needs a key | ODbL (share-alike) | None |
 | **Startup-Verband & startupdetector**, [*Next Generation*](https://startupverband.de/media/file/rs-nextgenerationstartupneugruendungenh12026) reports, [Startup Dashboard](https://www.startup-dashboard-deutschland.de) | Every new register entry screened, about 3% classed as startups; half-year counts by state and sector since 2019 | Free reports, twice a year | Counts are citable; **the list of names is a commercial product** | **The denominator** for coverage, by state |
@@ -121,20 +122,31 @@ What it does with a name:
    the 32 startups listed in November 2026, it read 25, and all 25 matched the checked
    number, court and legal name. The other 7 draw their imprint with JavaScript and land under
    *Needs a look*.
-4. **Drops a register number below one known to predate the window** at the same court. Numbers
-   run in order within a court, so this needs no register lookup, and it gets better with
-   every checked entry. A company that moved seat has a high number at its new court, which
-   this cannot see.
-5. **Proposes the best 20,** with a link to North Data's search. The rest wait for the next run.
+4. **Reads the first-entry date** from the company's page on online-handelsregister.de. It takes
+   a date only if the page states it as the first entry, or if the page's date field agrees
+   with the first shareholder list filed. Tried on the 66 entries already checked by hand, it
+   gave a date for 54, all of them right, and declined the other 12.
+5. **Drops whatever is already too old:** any date on that page before the window, and any
+   register number below one known to predate the window at the same court. Those dates can be
+   too late but never too early, so they rule a company out even where they could not rule it in.
+6. **Proposes the best 20.** The rest wait for the next run.
 
-**What stays manual:** the first-entry date, and the judgement that this is a new, independent
-technology company. The finder never contacts the register or North Data.
+The mirror's "first entry" is the first entry *under this court and number*, which is wrong in
+two cases. A company that **moved seat** arrives at its new court with a new date, so the finder
+follows the page's "bisher … Amtsgericht … HRB …" back to the old court. A company **converted**
+from another legal form ("Umwandlung") existed before this number did, so the date settles
+nothing and the lead goes under *Needs a look*. If the page names the company differently from
+its imprint, that goes there too: it is how an older company under a new name shows up.
+
+**What stays manual:** the judgement that this is a new, independent technology company, the
+independent source, and the date for anything under *Needs a look*. The finder never contacts
+the register or North Data.
 
 **What it keeps:** names, links, legal entity, register number and city. It does not keep
 article text, because those paragraphs name founders.
 
 **Reviewing the pull request.** The next run rewrites it, so finish within two weeks. For each
-lead: look up the first-entry date, do the rest of the check below, then add it to
+lead: confirm the first-entry date, do the rest of the check below, then add it to
 `new-startups.js` and remove the lead, or move it to `rejected` with the reason. Delete a lead
 that is plainly wrong. A lead you have no time for can stay: merging lists it on the page as
 named in sources, not checked yet.
@@ -145,7 +157,8 @@ to it; the pull request says so. deutsche-startups.de allows ordinary clients, s
 (read November 2026). The finder is a plain script with no AI in it, and it keeps only names
 and links back to the article, so it falls under the rule for ordinary clients. **An AI agent
 must not read that site:** run from Claude Code, the finder obeys the rules for AI agents and
-skips the source by itself, and during a review a person opens those articles.
+skips the source by itself, and during a review a person opens those articles. companyhouse.de
+and unternehmen24.info bar AI agents in the same way.
 
 **Setup, once:** tick *Allow GitHub Actions to create and approve pull requests* under
 *Settings → Actions → General → Workflow permissions*. The organisation allows it, but each
@@ -158,10 +171,12 @@ pages, the open leads in `new-startups.review.js`, and
 `node scripts/fetch-candidates.mjs --since <window start>` for Wikidata.
 
 **2. Check the register.** Find the company's entry: on the
-[Registerportal](https://www.handelsregister.de) (advanced search, then the current printout)
-or its [North Data](https://www.northdata.de) page. Note the **legal name, court and
-number, and the date of the first entry**. If that date is before the window, stop: it goes
-on the rejected list as `before-window`.
+[Registerportal](https://www.handelsregister.de) (advanced search, then the current printout),
+its [North Data](https://www.northdata.de) page, or its page on
+[online-handelsregister.de](https://www.online-handelsregister.de), reading that one
+[with care](#new-names-every-two-weeks). Note the **legal name, court and number, and the date
+of the first entry**. If that date is before the window, stop: it goes on the rejected list as
+`before-window`.
 
 **3. Check the company's own imprint.** It must name the same legal entity (court and
 number, or name and address). No imprint, a parked domain, or an imprint naming someone
@@ -212,17 +227,17 @@ none of that is copied. Only company facts are recorded.
 
 ## How complete it is
 
-**As of 2026-11-07: 32 startups**, first registered between 7 November 2023 and today.
+**As of 2026-11-07: 42 startups**, first registered between 7 November 2023 and today.
 
 | Measure | Value |
 |---|---|
 | Startups founded in Germany in the window, all sectors (national count) | **≈ 11,900**: half-yearly counts from Startup-Verband / startupdetector, prorated to the window, with ≈ 2,200 extrapolated for July–November 2026, which no report covers yet |
-| Listed here | **32, about 0.3 %** |
-| Candidates checked | 66: 32 listed, 24 registered before the window, 6 unverifiable, 3 out of scope, 1 not German |
-| States with no entry | Hamburg, Rhineland-Palatinate, Schleswig-Holstein, Bremen, Thuringia, Mecklenburg-Vorpommern. Hamburg alone saw 212 startups founded in January–June 2026 |
-| Over-represented | Bavaria: 41 % of the list against 21 % of national foundings |
-| Register date verified | 32 of 32 |
-| Stated founding year found | 22 of 32. The other 10 show the register date only |
+| Listed here | **42, about 0.4 %** |
+| Candidates checked | 95: 42 listed, 40 registered before the window, 6 unverifiable, 4 out of scope, 2 older businesses under a new name, 1 not German |
+| States with no entry | Thuringia and Mecklenburg-Vorpommern. What turned up there so far was too old or out of scope, and is on the rejected list |
+| Over-represented | Bavaria: 33 % of the list against 21 % of national foundings |
+| Register date verified | 42 of 42: 32 on North Data in October 2026, 10 on online-handelsregister.de in November |
+| Stated founding year found | 24 of 42. The other 18 show the register date only |
 
 **This is a verified sample, not a census, and nothing here should be read as complete.**
 Even within the map's seven domains (software alone is over a quarter of national
@@ -258,11 +273,14 @@ but each still takes a person's check, so reviewing its pull request has to be a
 
 **To expand fastest:**
 
-1. Clear the open leads in the review file: the ten from the October review, then the finder's.
-2. Target the six states with no entries through their startup programmes: Hamburg
-   (hamburg-startups.net, Startup Port), Schleswig-Holstein (KielRegion, StartUp SH),
-   Bremen (Starthaus), Mecklenburg-Vorpommern (Startup Factory MV), Thuringia (ThEx,
-   Jena), Rhineland-Palatinate (DFKI Kaiserslautern spin-offs).
+1. Clear the open leads in the review file.
+2. Target the two states with no entries through their programmes and prizes: Thuringia (the
+   ThEx AWARD, whose 2026 winners come out in November; StarTH) and Mecklenburg-Vorpommern (the
+   OZ-Existenzgründerpreis, also November; Stapellauf Nordost, Startup Factory MV). What filled the
+   other four in November 2026: the [ESA BIC Northern Germany portfolio](https://esa-bic.de/ng/portfolio/),
+   StartUp SH's Überflieger competition, the state winners of the
+   [KfW Award Gründen](https://www.kfw.de/%C3%9Cber-die-KfW/Newsroom/Aktuelles/News-Details_910208.html),
+   the GROW in RLP cohort, and Hamburg's [Startup City directory](https://startupcity.hamburg/startups-ecosystem).
 3. Work through the appliedAI landscape (CC BY 4.0) for AI startups registered inside the
    window.
 4. Sweep the spin-off lists of the large research organisations (Fraunhofer AHEAD,

@@ -147,8 +147,8 @@ npm test                                       # its rules, offline, on made-up 
 ```
 
 Reads the startup press, keeps the names inside the map's domains, reads each company's
-imprint for its legal name and register entry, and adds the best 20 to `leads` in
-`new-startups.review.js`. Everything it proposes goes into `new-startups.seen.json`, so a lead
+imprint for its legal name and register entry, looks up the first-entry date on
+online-handelsregister.de, and adds the best 20 to `leads` in `new-startups.review.js`. Everything it proposes goes into `new-startups.seen.json`, so a lead
 deleted in review does not come back. [NEW-STARTUPS.md](../NEW-STARTUPS.md#new-names-every-two-weeks)
 explains what it reads and why, and how to review what it finds.
 
@@ -166,8 +166,13 @@ Implementation notes worth keeping:
   names, links and register facts only, and the tests use invented companies.
 - **It re-loads the review file before writing it.** If the file's layout changes, the run
   stops instead of corrupting the dataset.
-- **A wrong register number is worse than none.** The reader leaves a field empty when in
-  doubt, and the lead then goes under *Needs a look*.
+- **A wrong register number or date is worse than none.** The readers leave a field empty when
+  in doubt, and the lead then goes under *Needs a look*. Measured on checked data: the imprint
+  reader read 25 of 32 sites with none wrong, and the date reader settled 54 of 66 entries with
+  none wrong. If you change either, measure it again against the entries we already hold.
+- **Dates on a register page can be too late, never too early.** Moves, conversions and stale
+  fields all push them later, which is why a date before the window rules a company out even
+  when the same date could not rule it in. `judge()` holds these rules, and the tests cover them.
 
 ## `new-startups.mjs`
 
