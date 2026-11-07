@@ -45,6 +45,7 @@ const sources = [
   ["data/companies/big.js", "COMPANIES_BIG"],
   ["data/companies/mid.js", "COMPANIES_MID"],
   ["data/companies/startup.js", "COMPANIES_STARTUP"],
+  ["data/companies/new-startups.js", "NEW_STARTUPS"],
   ["data/institutes.js", "INSTITUTES"],
 ];
 

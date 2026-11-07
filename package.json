@@ -7,7 +7,8 @@
   "scripts": {
     "build:geo": "node scripts/build-geo.mjs",
     "validate": "node scripts/validate.mjs",
-    "check:links": "node scripts/check-links.mjs"
+    "check:links": "node scripts/check-links.mjs",
+    "test": "node --test scripts/*.test.mjs"
   },
   "devDependencies": {
     "mapshaper": "^0.7.22"

@@ -205,13 +205,6 @@ const COMPANIES_MID = [
     website: "https://www.iabg.de"
   },
   {
-    name: "STARK Defence", city: "Munich", state: "bavaria",
-    lat: 48.16, lng: 11.55,
-    sector: "defense", size: "mid", founded: 2024,
-    description: "Develops AI-enabled loitering munitions and uncrewed strike drones for European defence.",
-    website: "https://stark-defence.com"
-  },
-  {
     name: "Autoflug", city: "Rellingen", state: "schleswig_holstein",
     lat: 53.640278, lng: 9.889109,
     address: "Industriestraße 10a-f, 25462, Rellingen",

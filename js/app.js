@@ -1,40 +1,7 @@
 // ── Config ───────────────────────────────────────────────────────────────────
 
-// Muted, editorial palette harmonized with the Robonn brand (#293740 / #485F66).
-// All tones share mid-lightness and low saturation so they sit beside the dark
-// teal brand without clashing — Robotics anchors on the brand teal itself.
-// Each sector also carries an `icon`: inline SVG inner-markup on a 24×24 grid,
-// stroked with currentColor (fill none) so it inherits the surrounding text/glyph
-// colour. Rendered everywhere sector appears via sectorIconSvg(), so the eight
-// hard-to-distinguish colours are no longer the only cue — engineers scan by glyph.
-// Sectors are DOMAINS — what an organisation works on. There is deliberately no
-// "research" sector: that described what an entry *is*, not what it does, and it
-// swallowed a third of the dataset, so "Robotics" showed 28 companies while DLR,
-// Fraunhofer IPA, DFKI and both Bonn labs sat invisible behind a chip no robotics
-// student would ever click. Company-vs-institute is the separate Type axis.
-const SECTOR_CONFIG = {
-  robotics:    { label: 'Robotics',            color: '#35707F', // brand teal
-    icon: '<rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 8V4M9 4h6"/><circle cx="9.5" cy="13" r="1.1"/><circle cx="14.5" cy="13" r="1.1"/>' },
-  automotive:  { label: 'Automotive',          color: '#BD7A4F', // terracotta
-    icon: '<path d="M4 14l2-5h12l2 5v3H4z"/><path d="M5 14h14"/><circle cx="8" cy="17.5" r="1.5"/><circle cx="16" cy="17.5" r="1.5"/>' },
-  ai_ml:       { label: 'AI & ML',             color: '#7B6A9C', // dusty plum
-    icon: '<rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 7V4M14 7V4M10 20v-3M14 20v-3M7 10H4M7 14H4M20 10h-3M20 14h-3"/>' },
-  industrial:  { label: 'Industrial',          color: '#5E7A99', // steel blue
-    icon: '<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3.5M12 18v3.5M2.5 12h3.5M18 12h3.5M5.2 5.2l2.5 2.5M16.3 16.3l2.5 2.5M18.8 5.2l-2.5 2.5M7.7 16.3l-2.5 2.5"/>' },
-  software:    { label: 'Software & Tech',     color: '#6F9966', // sage green
-    icon: '<path d="M9 8l-4 4 4 4M15 8l4 4-4 4M13.5 6.5l-3 11"/>' },
-  defense:     { label: 'Aerospace & Defense', color: '#A85550', // brick red
-    icon: '<path d="M21 3L3 11l6 2 2 6 3-5.5 4-10.5z"/><path d="M9 13l5.5-5"/>' },
-  agriculture: { label: 'Agriculture',         color: '#8B9A4E', // olive
-    icon: '<path d="M12 21v-8M12 13c0-4 3-7 8-7 0 5-3 8-8 8M12 15c0-3-2-5-6-5 0 4 2 6 6 6"/>' },
-};
-
-// Single source of truth for sector glyphs — reused by chips, legend, list,
-// popup badge, grid headers and the map markers.
-function sectorIconSvg(sector, cls = 'sector-icon') {
-  const cfg = SECTOR_CONFIG[sector];
-  return cfg ? `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${cfg.icon}</svg>` : '';
-}
+// The sector palette (SECTOR_CONFIG, sectorIconSvg), HTML escaping and the rule
+// that makes a startup "new" live in js/common.js, shared with startups.html.
 
 const SIZE_CONFIG = [
   { key: 'startup', label: 'Startup', range: '<100',      radius: 3.5 },
@@ -98,6 +65,12 @@ const ENTITIES = [
   ...INSTITUTES.map(e => Object.assign(e, { isInstitute: true })),
 ];
 
+// Startups founded in the last three years (the rule is in js/common.js) wear a
+// gold ring on the map and link to their register entry and sources on the
+// startups page. Everything else about them lives on that page.
+ENTITIES.forEach(c => { c.isNew = isNewStartup(c); });
+const NEW_ENTITIES = ENTITIES.filter(c => c.isNew);
+
 // ── Haversine distance (km) ───────────────────────────────────────────────────
 
 function haversine(lat1, lng1, lat2, lng2) {
@@ -114,38 +87,6 @@ function recomputeDistances() {
   ENTITIES.forEach(c => { c.distKm = Math.round(haversine(c.lat, c.lng, origin.lat, origin.lng)); });
 }
 
-// ── Job-seeker helpers ────────────────────────────────────────────────────────
-
-// Research institutes take thesis & working-student (HiWi) applicants by nature,
-// so we surface that as a reliable, derived signal — no per-entity data needed.
-function isStudentFriendly(c) { return !!c.isInstitute; }
-
-// One click from a dot to actual openings. Institutes rarely post on LinkedIn,
-// so bias their search toward the roles students can take; companies go straight
-// to a LinkedIn jobs search scoped to Germany.
-function jobsUrl(c) {
-  if (isStudentFriendly(c)) {
-    const q = `"${c.name}" (thesis OR Werkstudent OR HiWi OR PhD)`;
-    return 'https://www.google.com/search?q=' + encodeURIComponent(q);
-  }
-  return 'https://www.linkedin.com/jobs/search/?keywords='
-    + encodeURIComponent(c.name) + '&location=Germany';
-}
-
-// Name the roles link for what it actually opens. For a lab that is a search for
-// thesis / HiWi / PhD openings — the door a student actually walks through —
-// so calling both "Find roles" hid the more useful half.
-const jobsLabel = (c) => (isStudentFriendly(c) ? 'Thesis &amp; HiWi roles' : 'Find roles');
-
-const escapeAttr = s => String(s).replace(/"/g, '&quot;');
-
-// Contributor-supplied strings (name, city, description, region prose) are
-// interpolated into HTML all over this file. Anyone can open a PR adding an
-// entry, so every one of those values goes through esc() — a stray "<" in a
-// company name should render as text, never as markup.
-const ESC_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ESC_MAP[c]);
-
 // Popup is built on demand (function form passed to bindPopup) so the distance
 // line always reflects the current origin without re-binding markers.
 function popupHtml(c) {
@@ -155,6 +96,15 @@ function popupHtml(c) {
     : '';
   const jobsHtml =
     `<a href="${escapeAttr(jobsUrl(c))}" target="_blank" rel="noopener noreferrer" class="co-link co-jobs">${jobsLabel(c)} &#8599;</a>`;
+  // A new startup says what makes it one, and links to its card on the startups
+  // page, where its register entry and sources are.
+  const newHtml = c.isNew
+    ? `<div class="co-new"><span class="new-tag">New startup</span>
+        Registered ${esc(fmtDay(c.registered))}${c.founded ? ` &middot; founded ${esc(c.founded)}` : ''}</div>`
+    : '';
+  const sourcesHtml = c.isNew
+    ? `<a href="${STARTUPS_PAGE}#${escapeAttr(startupAnchor(c.name))}" class="co-link co-sources">Sources &rarr;</a>`
+    : '';
   return `
     <div class="co-popup">
       <div class="co-head">
@@ -166,8 +116,9 @@ function popupHtml(c) {
         &middot; ${esc(SIZE_RANGE[c.size] ?? c.size)} staff
         <span class="co-dist">${c.distKm} km from ${esc(origin.name)}</span>
       </div>
+      ${newHtml}
       <p class="co-desc">${esc(c.description)}</p>
-      <div class="co-footer">${jobsHtml}${websiteHtml}</div>
+      <div class="co-footer">${jobsHtml}${websiteHtml}${sourcesHtml}</div>
     </div>`;
 }
 
@@ -400,7 +351,9 @@ function updateChipCounts() {
     if (s === 'all') return;
     const n = ENTITIES.filter(c => c.sector === s && passesType(c) && passesOrigin(c) && passesRegion(c)).length;
     b.querySelector('.chip-count').textContent = n;
-    b.classList.toggle('chip-empty', n === 0 && !activeSectors.has(s));
+    const empty = n === 0 && !activeSectors.has(s);
+    b.classList.toggle('chip-empty', empty);
+    b.disabled = empty;   // inactive, for keyboards and screen readers too
     inScope += n;
   });
   // "All" shows what clearing the sector filter would leave you with.
@@ -423,13 +376,18 @@ function updateChipCounts() {
 // you zoom in, which is the honest tradeoff for never hiding the encoding.
 const markerLayer = L.layerGroup().addTo(map);
 
-// One render pass: add/remove each marker based on isVisible()
+// One render pass: add/remove each marker based on isVisible(). A new startup's
+// halo goes in first so it paints underneath the dot it rings.
+function showMarker(m) {
+  if (m.halo && !markerLayer.hasLayer(m.halo)) markerLayer.addLayer(m.halo);
+  if (!markerLayer.hasLayer(m.marker)) markerLayer.addLayer(m.marker);
+}
+function hideMarker(m) {
+  if (m.halo && markerLayer.hasLayer(m.halo)) markerLayer.removeLayer(m.halo);
+  if (markerLayer.hasLayer(m.marker)) markerLayer.removeLayer(m.marker);
+}
 function refreshMarkers() {
-  allMarkers.forEach(({ marker, company }) => {
-    const vis = isVisible(company);
-    if (vis && !markerLayer.hasLayer(marker)) markerLayer.addLayer(marker);
-    else if (!vis && markerLayer.hasLayer(marker)) markerLayer.removeLayer(marker);
-  });
+  allMarkers.forEach(m => (isVisible(m.company) ? showMarker(m) : hideMarker(m)));
 }
 
 function applyFilters() {
@@ -460,7 +418,9 @@ function applyFilters() {
 //
 //   s  sectors, comma-separated      r  Bundesland id
 //   o  origin city (name)            d  distance km — presence means "filter on"
-//   v  open overlay: list | grid
+//   t  types, comma-separated        v  open overlay: list | grid
+//   c  one entry to fly to on load, by name (the startups page links with it);
+//      a one-off, so the first URL write drops it
 
 let booting = true;   // suppress URL writes while readUrl() replays a link
 
@@ -477,6 +437,7 @@ function syncUrl() {
   set('o', origin === UNIVERSITY_CITIES[0] ? null : origin.name);
   set('d', bonnFilterActive ? bonnRadiusKm : null);
   set('v', listVisible ? 'list' : gridVisible ? 'grid' : null);
+  p.delete('c');
 
   history.replaceState(null, '', url);
 }
@@ -532,7 +493,18 @@ ENTITIES.forEach(c => {
     this.setStyle({ weight: isInst ? INST_WEIGHT : 1.5, fillOpacity: isInst ? INST_FILL : 0.95 });
   });
 
-  allMarkers.push({ marker, company: c });
+  // New startups wear a gold ring a few pixels out from the dot. A ring is a
+  // shape cue, not only a colour, so it still reads where the gold does not:
+  // startup dots are the smallest on the map, and a recoloured 3.5 px outline
+  // would be invisible. Not interactive: clicks go to the dot it surrounds.
+  const halo = c.isNew
+    ? L.circleMarker([c.lat, c.lng], {
+        radius: r + 3.4, color: NEW_COLOR, weight: 1.6, opacity: 0.95,
+        fill: false, interactive: false,
+      })
+    : null;
+
+  allMarkers.push({ marker, company: c, halo });
 });
 
 // ── De-collision: fan out markers that share one building ─────────────────────
@@ -552,11 +524,12 @@ ENTITIES.forEach(c => {
   const R = 22;   // metres from the shared point
   for (const members of groups.values()) {
     if (members.length < 2) continue;
-    members.forEach(({ marker, company }, i) => {
+    members.forEach(({ marker, company, halo }, i) => {
       const angle = (2 * Math.PI * i) / members.length - Math.PI / 2;
       const dLat = (R * Math.sin(angle)) / 111320;
       const dLng = (R * Math.cos(angle)) / (111320 * Math.cos(company.lat * Math.PI / 180));
       marker.setLatLng([company.lat + dLat, company.lng + dLng]);
+      if (halo) halo.setLatLng(marker.getLatLng());
     });
   }
 })();
@@ -690,6 +663,12 @@ panelContent.addEventListener('click', e => {
   if (btn) {
     const r = REGIONS.find(r => r.id === btn.dataset.rid);
     if (r) openPanel(r);
+    return;
+  }
+  const loc = e.target.closest('[data-locate]');
+  if (loc) {
+    const c = ENTITIES.find(c => c.name === loc.dataset.locate);
+    if (c) locateEntity(c);
   }
 });
 
@@ -719,12 +698,29 @@ function openPanel(region) {
     .map(r => `<button class="conn-tag" data-rid="${escapeAttr(r.id)}">${esc(r.name)}</button>`)
     .join('');
 
+  // New startups here, next to how many the national count says were founded
+  // here. An empty list beside a three-digit national figure is a gap in this
+  // map, not in the state, and the panel says so.
+  const newHere = NEW_ENTITIES.filter(c => c.state === region.id)
+    .sort((a, b) => b.registered.localeCompare(a.registered));
+  const natHere = NATIONAL.states[region.id];
+  const natLine = natHere !== undefined
+    ? `<p class="panel-note">${natHere} startups were founded in ${esc(region.name)} in ${esc(NATIONAL_LATEST_LABEL)} alone, by the national count.
+        <a href="${STARTUPS_PAGE}?r=${escapeAttr(region.id)}">Startups page &rarr;</a></p>`
+    : '';
+  const newHtml = newHere.length
+    ? `<div class="panel-conns">${newHere.map(c =>
+        `<button class="conn-tag new-tag-btn" data-locate="${escapeAttr(c.name)}">${esc(c.name)}</button>`).join('')}</div>${natLine}`
+    : `<p class="panel-empty">None on this map yet.</p>${natLine}`;
+
   panelContent.innerHTML = `
     <div class="panel-name">${esc(region.name)}</div>
     <div class="panel-tagline">${esc(region.tagline)}</div>
     <p class="panel-overview">${esc(region.overview)}</p>
     <div class="panel-sec">SECTOR BREAKDOWN &mdash; ${total} ${total === 1 ? 'entry' : 'entries'}</div>
     ${barsHtml || '<p class="panel-empty">Nothing tracked here yet.</p>'}
+    <div class="panel-sec">NEW STARTUPS &mdash; ${newHere.length} listed</div>
+    ${newHtml}
     <div class="panel-sec">KEY STRENGTHS</div>
     <ul class="panel-strengths">${region.strengths.map(s => `<li>${esc(s)}</li>`).join('')}</ul>
     <div class="panel-sec">CONNECTED REGIONS</div>
@@ -902,7 +898,7 @@ function locateEntity(c) {
   toggleList(false);
   const entry = allMarkers.find(m => m.company === c);
   if (!entry) return;
-  if (!markerLayer.hasLayer(entry.marker)) markerLayer.addLayer(entry.marker);
+  showMarker(entry);
   // Fly to the entity and open its popup once the move settles.
   map.flyTo([c.lat, c.lng], Math.max(map.getZoom(), 9), { duration: 0.8 });
   map.once('moveend', () => entry.marker.openPopup());
@@ -993,7 +989,7 @@ function renderSearch() {
     const mark = c.isInstitute ? 'sr-ring' : 'sr-disc';
     return `<li class="sr-item" role="option" id="sr-${i}" data-i="${i}" aria-selected="${i === searchCursor}">
       <span class="${mark}" style="color:${cfg.color}"></span>
-      <span class="sr-name">${esc(c.name)}</span>
+      <span class="sr-name">${esc(c.name)}</span>${c.isNew ? '<span class="sr-new">New</span>' : ''}
       <span class="sr-meta">${esc(c.city)} &middot; ${esc(cfg.label)}</span>
     </li>`;
   }).join('');
@@ -1078,10 +1074,12 @@ SIZE_CONFIG.forEach(s => {
     `<div class="leg-row"><span class="leg-size-slot"><span class="leg-dot" style="width:${d}px;height:${d}px"></span></span><span>${s.range}</span></div>`);
 });
 
-// Type — filled disc (company) vs hollow ring (institute)
+// Type — filled disc (company) vs hollow ring (institute), and the gold ring a
+// new startup wears around its dot.
 document.getElementById('legend-types').insertAdjacentHTML('beforeend',
   `<div class="leg-row"><span class="leg-size-slot"><span class="leg-dot"></span></span><span>Company</span></div>
-   <div class="leg-row"><span class="leg-size-slot"><span class="leg-ring"></span></span><span>Institute</span></div>`);
+   <div class="leg-row"><span class="leg-size-slot"><span class="leg-ring"></span></span><span>Institute</span></div>
+   <div class="leg-row"><span class="leg-size-slot"><span class="leg-new"><span class="leg-dot"></span></span></span><a href="${STARTUPS_PAGE}" class="leg-link">New startup (≤ 3 yrs)</a></div>`);
 
 // Collapse the legend to a small info chip in the corner; click it to reopen.
 const legendCollapse = document.getElementById('legend-collapse');
@@ -1167,6 +1165,9 @@ function readUrl() {
   const v = p.get('v');
   if (v === 'list') toggleList(true);
   else if (v === 'grid') toggleGrid(true);
+
+  const focus = p.has('c') && ENTITIES.find(e => e.name === p.get('c'));
+  if (focus) locateEntity(focus);
 
   booting = false;
   syncUrl();   // normalise the link (drops unknown or malformed params)

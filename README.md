@@ -9,8 +9,17 @@ companies and labs to connect with.
 
 ## What it shows
 
-- **169 companies and 100 university labs / research institutes** across 7 sectors,
+- **200 companies and 100 university labs / research institutes** across 7 sectors,
   plotted on a precise vector map of Germany and its 16 states — every state has entries.
+- **A Startups page** ([`startups.html`](startups.html)) — tech startups founded in
+  Germany in the last three years, each checked against the commercial register, its own
+  imprint and an independent source. A timeline shows when each one was registered;
+  sector, state and text filters narrow the cards; every card opens its sources and
+  links to the map. The page also shows how complete the list is against the national
+  startup counts, and every candidate that was checked and left out. On the map these
+  startups wear a gold ring and link to their card. Every two weeks a script collects new
+  names from the startup press into a pull request for review. Method and sources:
+  [NEW-STARTUPS.md](NEW-STARTUPS.md).
 - **Search** (press `/`) over names, cities, sectors and descriptions — typing
   `slam` finds the labs that do SLAM. Results ignore the active filters and fly
   straight to the hit.
@@ -21,7 +30,9 @@ companies and labs to connect with.
   organisation's site, and a roles link (thesis / HiWi search for labs).
 - **Every filter is in the URL**, so a link restores exactly what you were looking at —
   sectors, type, Bundesland, origin city, radius and the open view
-  (e.g. `?s=robotics&t=institute&r=bavaria&o=Munich&v=list`).
+  (e.g. `?s=robotics&t=institute&r=bavaria&o=Munich&v=list`). `?c=<name>` opens the map
+  on one entry; the Startups page keeps its own filters the same way
+  (`startups.html?s=robotics&r=bavaria`).
 
 ### Sectors are domains, not categories of organisation
 
@@ -42,13 +53,20 @@ python3 -m http.server 8080   # then open http://localhost:8080
 ## Project structure
 
 ```
-index.html              # page structure
+index.html              # the map page
+startups.html           # the Startups page
 css/style.css           # styling (Robonn brand)
-js/app.js               # all logic
+css/startups.css        # styling only the Startups page uses
+js/common.js            # shared by both pages: sector palette, escaping, the 3-year rule
+js/app.js               # the map
+js/startups.js          # the Startups page
 data/
   companies/            # companies (7 sectors), split by size
     global.js  big.js  mid.js  startup.js
-    index.js            # merges the size files into COMPANIES
+    new-startups.js     # founded in the last 3 years, any size, with register entry + sources
+    new-startups.review.js  # national baseline, rejected candidates, open leads
+    new-startups.seen.json  # everything the finder has proposed, so it does not repeat itself
+    index.js            # merges the company files into COMPANIES
   institutes.js         # research institutes & university labs
   regions.js            # regional profiles
   geo/                  # Germany state overlay (generated — run `npm run build:geo`)
@@ -60,12 +78,17 @@ scripts/
   validate.mjs          # checks company/institute data (CI gate on every PR)
   check-links.mjs       # checks every `website` URL still resolves
   geocode.mjs           # snaps coordinates to the real OSM building footprint
-  fetch-candidates.mjs  # drafts new entries from Wikidata for review
+  fetch-candidates.mjs  # drafts new entries from Wikidata for review (--since for new startups)
+  find-startups.mjs     # proposes new leads from the startup press (+ .test.mjs, npm test)
+  new-startups.mjs      # coverage + maintenance report for the Startups page
   build-geo.mjs         # regenerates the geo/*.js layers from src/
   README.md             # what each script does and how they fit together
 .github/workflows/
   validate.yml          # dataset + changed-link checks on every pull request
   links.yml             # weekly sweep of all links -> one self-updating issue
+  find-startups.yml     # every two weeks: new names from the press -> one pull request
+  new-startups.yml      # every two weeks: aged-out / due-for-recheck startups -> one issue
+NEW-STARTUPS.md         # what counts as a new startup, sources, checks, coverage
 ```
 
 ## Map & boundaries
@@ -98,7 +121,8 @@ the build but is no longer rendered — the tile basemap replaced it.)
 ## Contributing
 
 Adding a company or institute takes one entry and no code — see
-[CONTRIBUTING.md](CONTRIBUTING.md).
+[CONTRIBUTING.md](CONTRIBUTING.md). A startup founded in the last three years needs its
+register entry and sources too — see [NEW-STARTUPS.md](NEW-STARTUPS.md).
 
 ## Data & attribution
 
@@ -106,6 +130,10 @@ Adding a company or institute takes one entry and no code — see
   [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, and the GIS user community
 - Germany & state boundaries: [deutschlandGeoJSON](https://github.com/isellsoap/deutschlandGeoJSON)
   (data © GeoBasis-DE / BKG, [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0))
+- National startup counts (New startups coverage): Startup-Verband and startupdetector,
+  [*Next Generation – Startup-Neugründungen in Deutschland*](https://startupverband.de/media/file/rs-nextgenerationstartupneugruendungenh12026)
+- Register entries: Handelsregister publications, linked per entry via
+  [North Data](https://www.northdata.de)
 - Map rendering: [Leaflet](https://leafletjs.com/)
 - Boundary processing: [mapshaper](https://github.com/mbloch/mapshaper)
 

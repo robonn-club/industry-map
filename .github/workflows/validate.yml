@@ -42,6 +42,10 @@ jobs:
       - name: Validate dataset
         run: node scripts/validate.mjs
 
+      # The finder's rules, on made-up copies of what its sources publish. No network.
+      - name: Test the finder
+        run: node --test scripts/*.test.mjs
+
       # Only the URLs this PR actually added or changed, so a one-company PR
       # costs one request instead of 245. Fails only on a definitive 404/410/451
       # or a domain that does not resolve — never on a timeout or a bot-block.
