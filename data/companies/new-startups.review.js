@@ -449,6 +449,59 @@ const NEW_STARTUP_REVIEW = {
       name: "CyberTide",
       city: "Saarbrücken",
       note: "data-security platform (CISPA)"
+    },
+    {
+      name: "MuRay",
+      city: "Hamburg",
+      note: "sector guess: industrial; from Hamburg Startups",
+      website: "https://www.muray.tech/",
+      source: "https://www.hamburg-startups.net/millionenschwere-finanzierungsrunden-fuer-muray-und-hansetherm/",
+      found: "2026-11-07",
+      register: "Amtsgericht Hamburg HRB 199171",
+      imprint: "https://www.muray.tech/imprint"
+    },
+    {
+      name: "hansetherm",
+      city: "Hamburg",
+      note: "sector guess: industrial; from Hamburg Startups",
+      website: "https://www.hansetherm.de/",
+      source: "https://www.hamburg-startups.net/millionenschwere-finanzierungsrunden-fuer-muray-und-hansetherm/",
+      found: "2026-11-07",
+      legalName: "hansetherm GmbH",
+      register: "Amtsgericht Hamburg HRB 174065",
+      imprint: "https://www.hansetherm.de/impressum"
+    },
+    {
+      name: "Rabot Energy",
+      city: "Hamburg",
+      note: "sector guess: industrial; from Hamburg Startups",
+      website: "https://www.rabot.energy/",
+      source: "https://www.hamburg-startups.net/rabot-energy-erhaelt-50-millionen-euro-in-finanzierungsrunde/",
+      found: "2026-11-07",
+      legalName: "RABOT Energy DE GmbH",
+      register: "Amtsgericht Hamburg HRB 194021",
+      imprint: "https://www.rabot.energy/impressum/"
+    },
+    {
+      name: "goodBytz",
+      city: "Hamburg",
+      note: "sector guess: robotics; from Hamburg Startups",
+      website: "https://www.goodbytz.com/de/",
+      source: "https://www.hamburg-startups.net/goodbytz-bringt-roboterkueche-an-den-frankfurter-flughafen/",
+      found: "2026-11-07",
+      legalName: "GoodBytz GmbH",
+      register: "Amtsgericht Hamburg HRB 171538",
+      imprint: "https://www.goodbytz.com/de/legal/imprint"
+    },
+    {
+      name: "Procuros",
+      city: "Hamburg",
+      note: "sector guess: industrial; from Hamburg Startups",
+      website: "https://procuros.io/de",
+      source: "https://www.hamburg-startups.net/20-millionen-euro-fuer-procuros-in-neuer-finanzierungsrunde/",
+      found: "2026-11-07",
+      legalName: "Procuros GmbH",
+      imprint: "https://procuros.io/de/imprint"
     }
   ]
 };
