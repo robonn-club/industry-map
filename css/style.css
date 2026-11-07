@@ -72,7 +72,7 @@ body {
   min-width: 0;
 }
 
-/* Map | Startups — the site's two pages. Quiet on the dark header; the current
+/* Map | Startups | Pixel — the site's pages. Quiet on the dark header; the current
    page reads as a filled tab. */
 .header-nav { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .header-nav a {
@@ -1405,7 +1405,7 @@ path.leaflet-interactive:focus:not(:focus-visible) { outline: none; }
 @media (max-width: 640px) {
   #header { padding: 0 12px; }
   .brand-text span { display: none; }
-  /* The Map | Startups switch takes the brand text's place; the logo stays. */
+  /* The page switch takes the brand text's place; the logo stays. */
   .header-left { gap: 8px; }
   .header-left .brand-text { display: none; }
   .header-nav { gap: 2px; }

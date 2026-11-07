@@ -1,0 +1,375 @@
+/* ── Pixel view (pixel.html) ────────────────────────────────────────────────
+   Loaded after css/style.css, which supplies the tokens, the header and the
+   search box. Everything here is page-only. The page commits to one dark look,
+   like the map's dark canvas: a model of Germany on a dark table. */
+
+:root {
+  --px-table:  #1B272E;   /* the table the board stands on; matches the canvas fill */
+  --px-panel:  #22313A;
+  --px-raised: #2D3F49;
+  --px-line:   #485F66;   /* --accent */
+  --px-ink:    #ECF1F5;   /* --bg */
+  --px-mute:   #A9BBC7;
+  --px-gold:   #F2C66B;
+  --px-press:  #101A20;
+  --f-pixel:   'Pixelify Sans', ui-monospace, monospace;
+  color-scheme: dark;
+}
+
+html { height: 100%; }
+
+/* Several panels set display themselves, which would override the hidden attribute. */
+.pixel-page [hidden] { display: none !important; }
+
+body.pixel-page {
+  height: 100%;
+  background: var(--px-table);
+  color: var(--px-ink);
+}
+
+.pixel-page .header-brand { text-decoration: none; }
+.pixel-page .header-inner { min-width: 0; }
+.pixel-page #header {
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* ── Stage ──────────────────────────────────────────────────────────────── */
+
+#px-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--px-table);
+}
+
+#px-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+  touch-action: none;
+  outline: none;
+  image-rendering: pixelated;
+}
+#px-canvas.is-over { cursor: pointer; }
+#px-canvas.is-dragging { cursor: grabbing; }
+#px-canvas:focus-visible { box-shadow: inset 0 0 0 2px var(--px-gold); }
+
+.px-sprite { image-rendering: pixelated; display: block; flex-shrink: 0; }
+
+/* ── Buttons: hard edges and a one-step press, like the world they sit on ── */
+
+.px-btn {
+  font-family: var(--f);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--px-ink);
+  background: var(--px-raised);
+  border: 2px solid var(--px-line);
+  box-shadow: 0 2px 0 var(--px-press);
+  padding: 5px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.px-btn:hover { background: #38505C; }
+.px-btn:active { transform: translateY(2px); box-shadow: none; }
+.px-btn:focus-visible, .px-chip:focus-visible, #px-key-close:focus-visible, #px-card-close:focus-visible {
+  outline: 2px solid var(--px-gold);
+  outline-offset: 1px;
+}
+.px-btn[aria-pressed="true"], .px-btn[aria-current="true"] {
+  color: #16232A;
+  background: var(--px-gold);
+  border-color: #B98E2E;
+}
+
+.px-segment { display: flex; }
+.px-segment .px-btn + .px-btn { border-left: 0; }
+
+/* ── Key ────────────────────────────────────────────────────────────────── */
+
+#px-key {
+  position: absolute;
+  top: 12px;
+  left: max(16px, env(safe-area-inset-left, 0px));
+  bottom: 12px;
+  width: 288px;
+  overflow-y: auto;
+  background: var(--px-panel);
+  border: 2px solid var(--px-line);
+  box-shadow: 0 3px 0 var(--px-press);
+  padding: 12px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 3;
+}
+
+.px-key-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+#px-key h1 {
+  font-family: var(--f-pixel);
+  font-size: 1.14rem;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--px-ink);
+  text-wrap: balance;
+}
+
+#px-key h2 {
+  font-family: var(--f-pixel);
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--px-gold);
+  margin-bottom: 6px;
+}
+
+#px-key-close, #px-card-close {
+  background: none;
+  border: 0;
+  color: var(--px-mute);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+#px-key-close:hover, #px-card-close:hover { color: var(--px-ink); }
+
+#px-sizes { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; }
+.px-size { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.px-size span {
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--px-mute);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+#px-sectors, #px-types { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+
+.px-chip {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 0;
+  padding: 4px 6px;
+  font-family: var(--f);
+  text-align: left;
+  color: var(--px-ink);
+  background: transparent;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.px-chip:hover { background: var(--px-raised); }
+.px-chip[aria-pressed="true"] { background: var(--px-raised); border-color: var(--px-gold); }
+.px-chip-wide { width: 100%; }
+.px-chip-art { flex: 0 0 34px; display: flex; justify-content: center; align-items: flex-end; }
+
+.px-chip-text {
+  display: block;
+  min-width: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.px-chip-text small {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 500;
+  color: var(--px-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+#px-reset { align-self: flex-start; }
+
+#px-note {
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: var(--px-mute);
+  margin-top: auto;
+  border-top: 2px solid var(--px-raised);
+  padding-top: 8px;
+}
+
+#px-list {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--px-gold);
+  text-underline-offset: 2px;
+}
+#px-list:hover { color: #fff; }
+
+/* ── Places and tools ───────────────────────────────────────────────────── */
+
+#px-views {
+  position: absolute;
+  top: 12px;
+  left: calc(max(16px, env(safe-area-inset-left, 0px)) + 300px);
+  right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  z-index: 2;
+}
+#px-key[hidden] ~ #px-views { left: max(16px, env(safe-area-inset-left, 0px)); }
+
+#px-tools {
+  position: absolute;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  bottom: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  z-index: 2;
+}
+#px-zoom-in, #px-zoom-out { font-size: 1rem; line-height: 1; min-width: 34px; }
+
+/* On a wide screen the key stays open, so its toggle only matters once it is closed. */
+#px-key:not([hidden]) ~ #px-tools #px-key-toggle { display: none; }
+
+/* ── Building card ──────────────────────────────────────────────────────── */
+
+#px-card {
+  position: absolute;
+  top: 12px;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  width: 300px;
+  max-height: calc(100% - 72px);
+  overflow-y: auto;
+  background: var(--px-panel);
+  border: 2px solid var(--px-line);
+  box-shadow: 0 3px 0 var(--px-press);
+  padding: 0 14px 14px;
+  z-index: 4;
+}
+
+#px-card-close { position: absolute; top: 6px; right: 6px; color: #16232A; }
+#px-card-close:hover { color: #000; }
+
+.px-card-scene {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  margin: 0 -14px 12px;
+  padding: 16px 14px 10px;
+  background: #6F9664;
+  border-bottom: 2px solid var(--px-line);
+}
+
+#px-card h2 {
+  font-family: var(--f-pixel);
+  font-size: 1.22rem;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--px-ink);
+  text-wrap: balance;
+  margin-bottom: 8px;
+  overflow-wrap: anywhere;
+}
+
+.px-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+}
+.px-badge .sector-icon {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.px-card-meta { margin-top: 8px; font-size: 0.76rem; font-weight: 600; color: var(--px-mute); }
+.px-card-new { margin-top: 8px; font-size: 0.74rem; color: var(--px-gold); }
+.px-card-new span { font-weight: 700; color: #16232A; background: var(--px-gold); padding: 1px 6px; margin-right: 4px; }
+.px-card-desc { margin-top: 10px; font-size: 0.82rem; line-height: 1.5; color: var(--px-ink); }
+.px-card-moved { margin-top: 10px; font-size: 0.7rem; line-height: 1.4; color: var(--px-mute); }
+
+.px-card-links { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; }
+.px-card-links a {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--px-gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.px-card-links a:hover { color: #fff; }
+
+/* ── Tooltip ────────────────────────────────────────────────────────────── */
+
+#px-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: 300px;
+  padding: 5px 9px;
+  background: #101C23;
+  border: 2px solid var(--px-line);
+  pointer-events: none;
+  z-index: 5;
+}
+#px-tip strong { display: block; font-size: 0.8rem; font-weight: 700; color: #fff; }
+#px-tip span { display: block; font-size: 0.7rem; color: var(--px-mute); }
+
+/* ── Narrow screens ─────────────────────────────────────────────────────── */
+
+@media (max-width: 859px) {
+  #px-key {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-height: 62%;
+    border-width: 2px 0 0;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    z-index: 6;
+  }
+  #px-views, #px-key[hidden] ~ #px-views {
+    left: max(16px, env(safe-area-inset-left, 0px));
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 3px;
+    scrollbar-width: none;
+  }
+  #px-card {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-height: 62%;
+    border-width: 2px 0 0;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-bottom: max(14px, env(safe-area-inset-bottom, 0px));
+    z-index: 7;
+  }
+  .px-card-scene {
+    margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+    margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px)));
+  }
+  #px-key:not([hidden]) ~ #px-tools { display: none; }
+  #px-tools { justify-content: space-between; left: max(16px, env(safe-area-inset-left, 0px)); bottom: max(12px, env(safe-area-inset-bottom, 0px)); }
+  .pixel-page .header-stats { display: none; }
+  .pixel-page #search-input, .pixel-page #search-input:focus { width: 100%; }
+  .pixel-page .header-right { min-width: 0; flex: 1; justify-content: flex-end; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .px-btn:active { transform: none; }
+}

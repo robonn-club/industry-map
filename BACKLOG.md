@@ -62,6 +62,20 @@ companies to connect with.
    - Five 2023 registrations age out by 2026-12-18; add newer ones at least as fast.
    - Add the H2 2026 *Next Generation* counts when they are published (January 2027).
 
+8. **Pixel view** (`pixel.html`). The same entries as buildings on a pixel-art model of
+   Germany, with a Dots switch to compare. It answers the pile-up in item 4 another way:
+   every entry gets its own lot, so Munich's 47 entries form a district. The price is
+   position. Measured 2026-11-07: half the lots are within 12 km of the real address, the
+   farthest is 56 km (all Munich), and no building is more than half hidden, which the
+   layout enforces. Selecting a building pins its true location. Follow-ups:
+   - Decide whether it stays a page of its own, becomes a view switch on the map, or
+     becomes the poster and social image the club uses and nothing more.
+   - Not ported from the map: distance filter, Bundesland panel, Sector Grid, filters in
+     the URL, `?c=` links.
+   - It is a canvas: search works by keyboard, but browsing does not reach a screen reader.
+     The key links to the map's list as the accessible route.
+   - Rivers, forests and the Alps are hand-placed landmarks, not data.
+
 ## Needs human review
 
 The 83 institute sector/size assignments were made by reading each entry's name and

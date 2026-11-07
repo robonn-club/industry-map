@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pixel map — Industry Map — Robonn</title>
+  <meta name="description" content="Germany's robotics, tech and research landscape as a pixel-art model: every company and lab is a building, with height for headcount and rooftop for sector. Built by Robonn, the robotics club at the University of Bonn." />
+  <link rel="canonical" href="https://robonn-club.github.io/industry-map/pixel.html" />
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/robonn_logo_128.png" />
+  <meta name="theme-color" content="#293740" />
+
+  <!-- Link preview (Discord, LinkedIn, Slack, WhatsApp) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Robonn" />
+  <meta property="og:title" content="Pixel map of Germany's robotics industry — Robonn" />
+  <meta property="og:description" content="Every company and lab on the Industry Map as a pixel-art building: height for headcount, rooftop for sector." />
+  <meta property="og:url" content="https://robonn-club.github.io/industry-map/pixel.html" />
+  <meta property="og:image" content="https://robonn-club.github.io/industry-map/assets/og-cover.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Industry Map by Robonn — Germany's robotics, tech and research landscape" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Manrope:wght@400;500;600;700&family=Pixelify+Sans:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/pixel.css" />
+</head>
+<body class="pixel-page">
+
+  <!-- ── Header (shared with the map) ───────────────────────────────────── -->
+  <header id="header">
+    <div class="header-inner">
+      <div class="header-left">
+        <a class="header-brand" href="index.html">
+          <img src="assets/robonn_logo_128.png" alt="Robonn" class="brand-icon" />
+          <div class="brand-text">
+            <strong class="brand-name">Industry Map</strong>
+            <span>Robotics &amp; Tech Companies</span>
+          </div>
+        </a>
+        <nav class="header-nav" aria-label="Pages">
+          <a href="index.html">Map</a>
+          <a href="startups.html">Startups</a>
+          <a href="pixel.html" aria-current="page">Pixel</a>
+        </nav>
+      </div>
+
+      <div class="header-right">
+        <div id="search-box">
+          <svg id="search-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true">
+            <circle cx="7" cy="7" r="4.6"/><line x1="10.5" y1="10.5" x2="14.5" y2="14.5"/>
+          </svg>
+          <input id="search-input" type="search" autocomplete="off" spellcheck="false"
+                 placeholder="Search companies, labs, cities…"
+                 aria-label="Search companies, labs and cities"
+                 role="combobox" aria-expanded="false" aria-controls="search-results" />
+          <ul id="search-results" role="listbox" hidden></ul>
+        </div>
+        <div class="header-stats">
+          <div class="stat-box">
+            <span id="count-visible" class="stat-num">—</span>
+            <span class="stat-lbl">visible</span>
+          </div>
+          <div class="stat-sep">/</div>
+          <div class="stat-box">
+            <span id="count-total" class="stat-num">—</span>
+            <span class="stat-lbl">total</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="px-stage">
+    <canvas id="px-canvas" tabindex="0" role="img"
+            aria-label="A pixel-art model of Germany with one building for each company and lab. Use the search box to find one by name; arrow keys pan and plus and minus zoom."></canvas>
+
+    <aside id="px-key" aria-label="Key and filters">
+      <div class="px-key-head">
+        <h1>How to read a building</h1>
+        <button id="px-key-close" type="button" aria-label="Hide the key">&times;</button>
+      </div>
+
+      <section>
+        <h2>Height is headcount</h2>
+        <div id="px-sizes"></div>
+      </section>
+
+      <section>
+        <h2>Roof and colour are the sector</h2>
+        <div id="px-sectors"></div>
+      </section>
+
+      <section>
+        <h2>Stone columns mean a lab</h2>
+        <div id="px-types"></div>
+      </section>
+
+      <section>
+        <h2>A gold lot and flag mean new</h2>
+        <button id="px-new" class="px-chip px-chip-wide" type="button">
+          <span class="px-chip-text">Founded in the last 3 years<small></small></span>
+        </button>
+      </section>
+
+      <button id="px-reset" class="px-btn" type="button" hidden>Clear filters</button>
+      <p id="px-note"></p>
+      <a id="px-list" href="index.html?v=list">See every entry as a list</a>
+    </aside>
+
+    <nav id="px-views" aria-label="Jump to a place"></nav>
+
+    <div id="px-tools">
+      <button id="px-key-toggle" class="px-btn" type="button" aria-expanded="true" aria-controls="px-key">Key</button>
+      <div class="px-segment" role="group" aria-label="Draw entries as">
+        <button class="px-btn" type="button" data-mode="buildings" aria-pressed="true">Buildings</button>
+        <button class="px-btn" type="button" data-mode="dots" aria-pressed="false" title="The map's dots at their true positions, for comparison">Dots</button>
+      </div>
+      <div class="px-segment" role="group" aria-label="Zoom">
+        <button id="px-zoom-out" class="px-btn" type="button" aria-label="Zoom out">&minus;</button>
+        <button id="px-zoom-in" class="px-btn" type="button" aria-label="Zoom in">+</button>
+      </div>
+    </div>
+
+    <aside id="px-card" aria-live="polite" hidden></aside>
+    <div id="px-tip" hidden></div>
+  </main>
+
+  <script src="data/geo/germany.js"></script>
+  <script src="data/geo/bundeslaender.js"></script>
+  <script src="data/companies/global.js"></script>
+  <script src="data/companies/big.js"></script>
+  <script src="data/companies/mid.js"></script>
+  <script src="data/companies/startup.js"></script>
+  <script src="data/companies/new-startups.js"></script>
+  <script src="data/companies/new-startups.review.js"></script>
+  <script src="data/companies/index.js"></script>
+  <script src="data/institutes.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/pixel-sprites.js"></script>
+  <script src="js/pixel.js"></script>
+</body>
+</html>

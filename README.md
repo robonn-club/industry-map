@@ -20,6 +20,12 @@ companies and labs to connect with.
   startups wear a gold ring and link to their card. Every two weeks a script collects new
   names from the startup press into a pull request for review. Method and sources:
   [NEW-STARTUPS.md](NEW-STARTUPS.md).
+- **A Pixel view** ([`pixel.html`](pixel.html)) — the same entries as buildings on a
+  pixel-art model of Germany: height is headcount, roof and colour are the sector, stone
+  columns mean a lab, a gold lot and flag mean a new startup. Every entry gets its own lot,
+  so dense cities become districts instead of a pile of dots. The price is position: a lot
+  sits near the real address, not on it. Selecting a building pins its true location, and
+  a Dots switch shows the map's own markers on the same ground.
 - **Search** (press `/`) over names, cities, sectors and descriptions — typing
   `slam` finds the labs that do SLAM. Results ignore the active filters and fly
   straight to the hit.
@@ -55,11 +61,15 @@ python3 -m http.server 8080   # then open http://localhost:8080
 ```
 index.html              # the map page
 startups.html           # the Startups page
+pixel.html              # the Pixel view
 css/style.css           # styling (Robonn brand)
 css/startups.css        # styling only the Startups page uses
-js/common.js            # shared by both pages: sector palette, escaping, the 3-year rule
+css/pixel.css           # styling only the Pixel view uses
+js/common.js            # shared by all pages: sector palette, escaping, the 3-year rule
 js/app.js               # the map
 js/startups.js          # the Startups page
+js/pixel.js             # the Pixel view: projection, lot layout, ground, camera, UI
+js/pixel-sprites.js     # the Pixel view's buildings, generated from sector, size and type
 data/
   companies/            # companies (7 sectors), split by size
     global.js  big.js  mid.js  startup.js

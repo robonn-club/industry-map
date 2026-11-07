@@ -1,7 +1,7 @@
-// Shared by the map (index.html → js/app.js) and the startups page
-// (startups.html → js/startups.js): the sector palette, HTML escaping, and the
-// rule that makes a startup "new". Load it after the data files and before
-// either page's own script.
+// Shared by the map (index.html → js/app.js), the startups page
+// (startups.html → js/startups.js) and the pixel view (pixel.html → js/pixel.js):
+// the sector palette, HTML escaping, and the rule that makes a startup "new". Load
+// it after the data files and before a page's own script.
 
 // ── Sectors ───────────────────────────────────────────────────────────────────
 
