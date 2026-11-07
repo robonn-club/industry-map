@@ -11,6 +11,10 @@
   --r:       6px;
   --f:       'Manrope', system-ui, sans-serif;
   --f-head:  'Outfit', system-ui, sans-serif;
+  /* New startups: the gold ring on the map, and its ink/paper pair for text. */
+  --new:     #E3A72F;
+  --new-ink: #6E4A00;
+  --new-bg:  #FBF1D9;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -61,7 +65,36 @@ body {
   border-radius: 4px;
 }
 
-.brand-text h1 {
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+/* Map | Startups — the site's two pages. Quiet on the dark header; the current
+   page reads as a filled tab. */
+.header-nav { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.header-nav a {
+  font-family: var(--f);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: rgba(223,233,240,0.7);
+  text-decoration: none;
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 1.5px solid transparent;
+  transition: color 0.13s, background 0.13s, border-color 0.13s;
+  white-space: nowrap;
+}
+.header-nav a:hover { color: #fff; border-color: rgba(193,206,217,0.3); }
+.header-nav a[aria-current="page"] { color: var(--brand); background: var(--bg); }
+.header-nav a:focus-visible { outline: 2px solid var(--bg); outline-offset: 2px; }
+
+/* The startups page has its own h1, so its brand line is not a heading. */
+.brand-text .brand-name { display: block; }
+.brand-text h1,
+.brand-text .brand-name {
   font-family: var(--f-head);
   font-size: 0.95rem;
   font-weight: 700;
@@ -70,9 +103,10 @@ body {
   letter-spacing: -0.01em;
 }
 
+/* Lighter than --text-3: at this size the subtitle needs 4.5:1 on the dark header. */
 .brand-text span {
   font-size: 0.68rem;
-  color: var(--text-3);
+  color: #A9BBC7;
 }
 
 .header-right {
@@ -366,9 +400,10 @@ body {
    on every chip so you can see where the data is *before* clicking. */
 .chip-count {
   font-variant-numeric: tabular-nums;
-  font-weight: 700;
+  /* Full ink, kept quieter than the label by size and weight: a count drawn at
+     65% opacity fell below the 4.5:1 that text this small needs. */
+  font-weight: 600;
   font-size: 0.68rem;
-  opacity: 0.65;
   margin-left: 1px;
   /* Reserve room for the widest count (245) and right-align inside it. Without
      this the chip narrows as its number shrinks (83 -> 8) and every chip to the
@@ -1304,6 +1339,60 @@ path.leaflet-interactive:focus:not(:focus-visible) { outline: none; }
 .list-sector-lbl { color: var(--text); }   /* keep label ink-coloured; icon stays sector-coloured */
 .list-dist { font-variant-numeric: tabular-nums; }
 
+/* ── New startups on the map ─────────────────────────────────────────────── */
+/* What the map shows of them: a gold ring (drawn in app.js), a line in the
+   popup, a badge in search results, a legend row and the region panel. The rest
+   is on the startups page (css/startups.css). */
+
+.co-new {
+  font-size: 0.7rem;
+  color: var(--new-ink);
+  margin: -3px 0 8px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.new-tag {
+  background: var(--new-bg);
+  color: var(--new-ink);
+  border: 1px solid var(--new);
+  border-radius: 8px;
+  padding: 0 6px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.co-footer { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 14px; row-gap: 6px; }
+.co-footer .co-jobs { margin-right: 0; }
+
+.sr-new {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--new-ink);
+  background: var(--new-bg);
+  border: 1px solid var(--new);
+  border-radius: 7px;
+  padding: 0 5px;
+  flex-shrink: 0;
+}
+
+.leg-new {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 1.5px solid var(--new);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.leg-new .leg-dot { width: 6px; height: 6px; background: var(--text-2); }
+.leg-link { color: inherit; text-decoration: none; }
+.leg-link:hover { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
+
+.panel-note { font-size: 0.72rem; color: var(--text-2); line-height: 1.5; margin-top: 8px; }
+.panel-note a { color: var(--accent); font-weight: 700; white-space: nowrap; }
+.new-tag-btn { border-color: var(--new); }
+
 /* Between mobile and a wide desktop the bar carries two chip groups plus their
    labels and does not fit; the group labels are the cheapest thing to drop,
    since the chips are self-describing. */
@@ -1316,6 +1405,11 @@ path.leaflet-interactive:focus:not(:focus-visible) { outline: none; }
 @media (max-width: 640px) {
   #header { padding: 0 12px; }
   .brand-text span { display: none; }
+  /* The Map | Startups switch takes the brand text's place; the logo stays. */
+  .header-left { gap: 8px; }
+  .header-left .brand-text { display: none; }
+  .header-nav { gap: 2px; }
+  .header-nav a { font-size: 0.7rem; padding: 4px 8px; }
   .header-stats { display: none; }
   .btn-text { display: none; }
 
@@ -1344,8 +1438,8 @@ path.leaflet-interactive:focus:not(:focus-visible) { outline: none; }
   .type-btn { padding: 4px 8px; font-size: 0.68rem; }
 
   /* Leave room for the "?" button next to it. */
-  #search-input { width: 168px; font-size: 0.74rem; }
-  #search-input:focus { width: 188px; }
+  #search-input { width: 140px; font-size: 0.74rem; }
+  #search-input:focus { width: 160px; }
   .filter-label { display: none; }
   .filter-btn { padding: 4px 9px; font-size: 0.71rem; }
   .filter-sep { display: none; }

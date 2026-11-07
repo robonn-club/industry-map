@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New startups — Industry Map — Robonn</title>
+  <meta name="description" content="Tech startups founded in Germany in the last three years, each checked against the commercial register, with its sources and an honest figure for how complete the list is. Built by Robonn, the robotics club at the University of Bonn." />
+  <link rel="canonical" href="https://robonn-club.github.io/industry-map/startups.html" />
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/robonn_logo_128.png" />
+  <meta name="theme-color" content="#293740" />
+
+  <!-- Link preview (Discord, LinkedIn, Slack, WhatsApp) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Robonn" />
+  <meta property="og:title" content="New startups in Germany — Industry Map" />
+  <meta property="og:description" content="Tech startups founded in Germany in the last three years, each checked against the commercial register." />
+  <meta property="og:url" content="https://robonn-club.github.io/industry-map/startups.html" />
+  <meta property="og:image" content="https://robonn-club.github.io/industry-map/assets/og-cover.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Industry Map by Robonn — Germany's robotics, tech and research landscape" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="New startups in Germany — Industry Map" />
+  <meta name="twitter:description" content="Tech startups founded in Germany in the last three years, each checked against the commercial register." />
+  <meta name="twitter:image" content="https://robonn-club.github.io/industry-map/assets/og-cover.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/startups.css" />
+</head>
+<body class="startups-page">
+
+  <!-- ── Header (shared with the map) ───────────────────────────────────── -->
+  <header id="header">
+    <div class="header-inner">
+      <div class="header-left">
+        <a class="header-brand" href="index.html">
+          <img src="assets/robonn_logo_128.png" alt="Robonn" class="brand-icon" />
+          <div class="brand-text">
+            <strong class="brand-name">Industry Map</strong>
+            <span>Robotics &amp; Tech Companies</span>
+          </div>
+        </a>
+        <nav class="header-nav" aria-label="Pages">
+          <a href="index.html">Map</a>
+          <a href="startups.html" aria-current="page">Startups</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main id="su-main">
+
+    <!-- ── Hero: the dark band carries on from the header, like the map's
+         dark canvas, so the two pages read as one product. ─────────────── -->
+    <section class="su-hero" aria-labelledby="su-title">
+      <div class="su-hero-inner">
+        <div class="su-hero-text">
+          <p class="su-eyebrow">New startups</p>
+          <h1 id="su-title">Tech startups founded in Germany in the last three years</h1>
+          <p class="su-lede">Young companies building robots, AI, defence, industrial and
+            software technology. Each one is checked against the commercial register, its own
+            imprint and an independent source.</p>
+        </div>
+        <dl class="su-stats" id="su-stats"></dl>
+      </div>
+      <!-- One dot per startup, placed by its register date: the rolling
+           three-year window at a glance. The cards below carry the same
+           information for keyboard and screen-reader users. -->
+      <figure class="su-timeline" id="su-timeline">
+        <figcaption class="su-tl-cap" id="su-tl-cap"></figcaption>
+        <div class="su-tl-plot" id="su-tl-plot"></div>
+        <div class="su-tip" id="su-tip" aria-hidden="true" hidden></div>
+      </figure>
+    </section>
+
+    <!-- ── Filters: one row above everything they scope; state in the URL
+         (s, r, q). Sticky on wide screens. ─────────────────────────────── -->
+    <section class="su-toolbar" aria-label="Filter the startups">
+      <div class="su-toolbar-inner">
+        <div class="su-sectors" id="su-sectors" role="group" aria-label="Sector"></div>
+        <div class="su-row">
+          <label class="su-field">
+            <span class="su-label">State</span>
+            <select id="su-state"></select>
+          </label>
+          <label class="su-field su-search">
+            <span class="su-label">Search</span>
+            <input id="su-search" type="search" placeholder="Name, city or what they build" autocomplete="off" spellcheck="false" />
+          </label>
+          <p class="su-count" id="su-count" aria-live="polite"></p>
+          <button class="su-clear" id="su-clear" type="button" hidden>Clear filters</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="su-wrap">
+      <div id="su-list"></div>
+
+      <section class="su-panel" id="su-coverage" aria-labelledby="cov-title"></section>
+
+      <aside class="su-cta" aria-labelledby="cta-title">
+        <div>
+          <h2 id="cta-title">Know a startup that is missing?</h2>
+          <p>An entry is one record and three sources: its commercial-register entry, its own
+            imprint and one independent mention. The guide walks through each step.</p>
+        </div>
+        <a class="su-cta-btn" href="https://github.com/robonn-club/industry-map/blob/main/CONTRIBUTING.md#add-a-new-startup" target="_blank" rel="noopener noreferrer">Suggest a startup &rarr;</a>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="su-footer">
+    <p>Part of the <a href="index.html">Industry Map</a> by
+      <a href="https://github.com/robonn-club" target="_blank" rel="noopener noreferrer">Robonn</a>, the robotics club at the University of Bonn.
+      Register entries from the Handelsregister, linked per startup; national counts from
+      Startup-Verband and startupdetector.
+      <a href="https://github.com/robonn-club/industry-map/blob/main/NEW-STARTUPS.md" target="_blank" rel="noopener noreferrer">How this list is built</a>
+      &middot; <a href="https://github.com/robonn-club/industry-map" target="_blank" rel="noopener noreferrer">Source on GitHub</a> (MIT)</p>
+  </footer>
+
+  <script src="data/companies/new-startups.js"></script>
+  <script src="data/companies/new-startups.review.js"></script>
+  <script src="data/regions.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/startups.js"></script>
+</body>
+</html>

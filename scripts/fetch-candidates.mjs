@@ -11,6 +11,9 @@
 // ONE-SENTENCE DESCRIPTION (Wikidata's is only a rough hint).
 //
 // No dependencies — uses Node 18+ global fetch. Run: node scripts/fetch-candidates.mjs
+//   --since YYYY-MM-DD   only companies Wikidata says were founded on or after
+//                        that day: leads for the Startups page, to be
+//                        checked against NEW-STARTUPS.md like any other lead
 // Data: Wikidata (CC0). Be polite: it queries the public endpoint a few times.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -22,6 +25,13 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ENDPOINT = "https://query.wikidata.org/sparql";
 const UA = "robonn-industry-map-databot/0.1 (https://github.com/robonn-club/industry-map; research)";
 const PER_SECTOR_LIMIT = 250;
+
+const sinceArg = process.argv.indexOf("--since");
+const SINCE = sinceArg === -1 ? null : process.argv[sinceArg + 1];
+if (SINCE !== null && !/^\d{4}-\d{2}-\d{2}$/.test(SINCE ?? "")) {
+  console.error("✗ --since needs a date, e.g. --since 2023-10-05");
+  process.exit(2);
+}
 
 // Wikidata industry (P452) QID → our sector. Derived from the real industry
 // distribution of German companies (scripts/README.md explains how to extend).
@@ -68,10 +78,14 @@ const EXISTING_SOURCES = [
   ["data/companies/big.js", "COMPANIES_BIG"],
   ["data/companies/mid.js", "COMPANIES_MID"],
   ["data/companies/startup.js", "COMPANIES_STARTUP"],
+  ["data/companies/new-startups.js", "NEW_STARTUPS"],
   ["data/institutes.js", "INSTITUTES"],
   ["data/_candidates.js", "CANDIDATES"],
   ["data/_candidates.generated.js", "CANDIDATES_GENERATED"],
 ];
+// Startups already checked for the Startups page and left out (founded
+// too early, out of scope, unverifiable…). Re-proposing them wastes a review.
+const REVIEW_FILE = ["data/companies/new-startups.review.js", "NEW_STARTUP_REVIEW"];
 
 function loadExistingNames() {
   const names = new Set();
@@ -80,10 +94,21 @@ function loadExistingNames() {
     try {
       const src = readFileSync(join(ROOT, file), "utf8");
       const arr = new Function(`${src};return typeof ${varName}!=="undefined"?${varName}:[];`)();
-      for (const e of arr) if (e?.name) names.add(e.name.toLowerCase());
+      for (const e of arr) {
+        if (e?.name) names.add(e.name.toLowerCase());
+        if (e?.legalName) names.add(e.legalName.toLowerCase());
+      }
       if (arr.length) loaded++;
     } catch { /* _candidates files may legitimately not exist yet */ }
   }
+  try {
+    const [file, varName] = REVIEW_FILE;
+    const review = new Function(`${readFileSync(join(ROOT, file), "utf8")};return ${varName};`)();
+    for (const r of [...review.rejected, ...review.leads]) {
+      names.add(r.name.toLowerCase());
+      if (r.legalName) names.add(r.legalName.toLowerCase());
+    }
+  } catch { /* no review file yet: nothing ruled out */ }
   // The data files are not optional. If none of them loaded, the dedupe set is
   // empty and every existing entry would come back as a candidate — fail loudly
   // instead of generating hundreds of duplicates.
@@ -109,7 +134,9 @@ SELECT ?company ?companyLabel ?hq ?coord ?inception ?employees ?website ?cityLab
   OPTIONAL { ?company wdt:P625 ?coordC. }
   OPTIONAL { ?hq wdt:P625 ?coordH. }
   BIND(COALESCE(?coordC, ?coordH) AS ?coord)
-  OPTIONAL { ?company wdt:P571 ?inception. }
+  ${SINCE
+    ? `?company wdt:P571 ?inception. FILTER(?inception >= "${SINCE}T00:00:00Z"^^xsd:dateTime)`
+    : "OPTIONAL { ?company wdt:P571 ?inception. }"}
   OPTIONAL { ?company wdt:P1128 ?employees. }
   OPTIONAL { ?company wdt:P856 ?website. }
   OPTIONAL { ?hq rdfs:label ?cityLabel. FILTER(LANG(?cityLabel)="en") }
@@ -263,6 +290,12 @@ function writeOutput(bySector) {
     "//  • REWRITE the description into one factual sentence (drafts are rough),",
     "//  • fill any blank field flagged in the trailing comment.",
     "//",
+    ...(SINCE ? [
+      `// Only companies founded on or after ${SINCE} according to Wikidata. Wikidata's`,
+      "// founding dates are often wrong or rounded to a year: confirm the register date",
+      "// and the rest of NEW-STARTUPS.md before an entry goes into new-startups.js.",
+      "//",
+    ] : []),
     `// Generated ${new Date().toISOString().slice(0, 10)}. Source: Wikidata (CC0).`,
     "// ─────────────────────────────────────────────────────────────────────────────",
     "",

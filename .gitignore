@@ -17,3 +17,6 @@ scripts/.geocode-cache.json
 
 # Geocoder review/worklist (regenerable: node scripts/geocode.mjs)
 data/_geocode.review.json
+
+# The finder's summary, written for the pull request's body
+proposals.md

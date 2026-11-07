@@ -1,0 +1,77 @@
+# Check on the Startups page every two weeks, the day after the finder: entries
+# that have aged out of the three-year window, entries due for re-verification,
+# national counts that are out of date, and a finder that has gone quiet. See
+# NEW-STARTUPS.md.
+#
+# Like links.yml it never fails a build. It keeps one issue current and closes
+# it when nothing is due, because a red X on a cron job gets ignored and a
+# single self-updating checklist does not.
+name: new-startups
+
+on:
+  schedule:
+    # The 2nd and 16th of each month, 06:23 UTC: off the hour, like the link sweep.
+    - cron: '23 6 2,16 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Build the coverage report
+        run: |
+          node scripts/new-startups.mjs --json > report.json
+          node scripts/new-startups.mjs > report.md
+
+      - name: Open, update or close the maintenance issue
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('report.json', 'utf8'));
+            const TITLE = 'New startups: maintenance due';
+            const { owner, repo } = context.repo;
+
+            const open = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: 'open', labels: 'new-startups', per_page: 100,
+            });
+            const existing = open.find(i => i.title === TITLE);
+
+            if (!report.maintenanceDue) {
+              core.info(`Nothing due: ${report.listed} listed, coverage ${(100 * report.coverage).toFixed(1)}%.`);
+              if (existing) {
+                await github.rest.issues.createComment({
+                  owner, repo, issue_number: existing.number,
+                  body: 'Nothing is due as of the latest check — closing.',
+                });
+                await github.rest.issues.update({ owner, repo, issue_number: existing.number, state: 'closed' });
+              }
+              return;
+            }
+
+            const body = [
+              fs.readFileSync('report.md', 'utf8'),
+              '',
+              '<sub>Updated by [`new-startups.yml`](../actions/workflows/new-startups.yml)'
+                + ` on ${new Date().toISOString().slice(0, 10)}. How to act on each item: NEW-STARTUPS.md.</sub>`,
+            ].join('\n');
+
+            if (existing) {
+              await github.rest.issues.update({ owner, repo, issue_number: existing.number, body });
+              core.info(`Updated issue #${existing.number}.`);
+            } else {
+              const { data } = await github.rest.issues.create({
+                owner, repo, title: TITLE, body, labels: ['new-startups'],
+              });
+              core.info(`Opened issue #${data.number}.`);
+            }

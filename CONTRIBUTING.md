@@ -7,7 +7,9 @@ company or research institute** — no coding required, just one JSON-style entr
 
 Companies are split by size into [`data/companies/`](data/companies/) — open the
 file matching the company's size (`global.js`, `big.js`, `mid.js`, or
-`startup.js`) and copy an existing entry into the right sector block:
+`startup.js`) and copy an existing entry into the right sector block. Founded in the
+last three years? It goes in `new-startups.js` instead, with its evidence — see
+[Add a new startup](#add-a-new-startup).
 
 ```js
 {
@@ -18,6 +20,50 @@ file matching the company's size (`global.js`, `big.js`, `mid.js`, or
   website: "https://example.com"
 },
 ```
+
+## Add a new startup
+
+Tech startups founded in Germany in the last three years go in
+[`data/companies/new-startups.js`](data/companies/new-startups.js), the data behind the
+**Startups** page ([`startups.html`](startups.html)), whatever their size. They carry more than a regular entry,
+because "founded in the last three years" is a claim anyone should be able to check:
+
+```js
+{
+  name: "Example Robotics", city: "Munich", state: "bavaria",
+  lat: 48.1374, lng: 11.5755,
+  address: "Musterstraße 1, 80331 München",          // from the company's imprint
+  sector: "robotics", size: "startup", founded: 2025, // founded only if a source says so
+  description: "One concise sentence on what they build.",
+  website: "https://example.com",
+  legalName: "Example Robotics GmbH",
+  register: "Amtsgericht München HRB 123456",
+  registered: "2025-03-14",                           // first entry in the commercial register
+  status: "active", verified: "2026-10-05",           // the day you checked all of this
+  sources: [
+    { type: "register",  url: "https://www.northdata.de/…", note: "First entry 2025-03-14, Amtsgericht München HRB 123456" },
+    { type: "company",   url: "https://example.com/impressum", note: "Imprint names Example Robotics GmbH" },
+    { type: "press",     url: "https://…", note: "Founded 2025; €2M pre-seed" },
+  ],
+},
+```
+
+Before adding one, read **[NEW-STARTUPS.md](NEW-STARTUPS.md)**. It sets out what counts as a
+tech startup here, why the window runs on the register date rather than the founding
+year, and the five-step check. In short: the register entry must be inside the last three
+years, the company's own imprint must name that same legal entity, and one independent
+source (press, university, investor) must confirm what it does. If a startup fails a step,
+add it to the `rejected` list in
+[`new-startups.review.js`](data/companies/new-startups.review.js) with the reason, so
+nobody checks it again.
+
+Looking for a place to start? Every two weeks the finder opens a pull request, *New startups
+to review*, with new names from the startup press and most of the legwork done. Checking one
+of those is the quickest way to help. See
+[New names every two weeks](NEW-STARTUPS.md#new-names-every-two-weeks).
+
+**Never copy personal data from the register.** Managing directors and founders are listed
+there. Record only company facts.
 
 ## Add a research institute
 
@@ -79,6 +125,7 @@ dissolve (one shared topology), so the borders always match. Edit `data/geo/src/
    ```bash
    node scripts/validate.mjs              # fields, codes, duplicates, coordinates
    node scripts/check-links.mjs --changed # the URLs you added actually resolve
+   node scripts/new-startups.mjs          # only if you touched new-startups*.js: coverage now
    npm run build:geo                      # only if you touched data/geo/src/
    ```
 4. Open a pull request describing what you added.

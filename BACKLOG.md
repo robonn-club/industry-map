@@ -45,6 +45,23 @@ companies to connect with.
    with `scripts/check-links.mjs` and a weekly link sweep. See
    [scripts/README.md](scripts/README.md).
 
+7. ~~**New startups.**~~ **Done (2026-10-05; own page 2026-10-14).** Tech startups founded
+   in Germany in the last three years, each checked against the commercial register, its
+   own imprint and an independent source: a separate Startups page (timeline of register
+   dates, filters, cards with sources, coverage against the national counts), gold-ringed
+   dots on the map that link to it, and a maintenance issue. A finder (2026-11-07) collects
+   new names from the startup press into a pull request every two weeks. 32 listed of
+   66 checked, about 0.3% of the ≈11,900 startups founded in the window. Method:
+   [NEW-STARTUPS.md](NEW-STARTUPS.md). Follow-ups:
+   - Clear the 10 open leads in `new-startups.review.js`, then the finder's.
+   - MicroAGI: its `HRB 315755` is dated 2025-10-22, but Munich's `HRB 314694` is dated
+     2026-07-22 and numbers run in order. A seat move would explain it; check it on the
+     Registerportal.
+   - First entries for Hamburg, Bremen, Schleswig-Holstein, Mecklenburg-Vorpommern,
+     Thuringia and Rhineland-Palatinate.
+   - Five 2023 registrations age out by 2026-12-18; add newer ones at least as fast.
+   - Add the H2 2026 *Next Generation* counts when they are published (January 2027).
+
 ## Needs human review
 
 The 83 institute sector/size assignments were made by reading each entry's name and

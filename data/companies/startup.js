@@ -88,14 +88,6 @@ const COMPANIES_STARTUP = [
     website: "https://www.merantix.com"
   },
   {
-    name: "Black Forest Labs", city: "Freiburg", state: "bw",
-    lat: 48.014932, lng: 7.8468,
-    address: "Ingeborg-Krummer-Schroth-Straße 18, 79106, Freiburg im Breisgau",
-    sector: "ai_ml", size: "startup", founded: 2024,
-    description: "Creators of the FLUX open-weight image-generation models, founded by ex-Stability researchers.",
-    website: "https://bfl.ai"
-  },
-  {
     name: "deepset", city: "Berlin", state: "berlin",
     lat: 52.531551, lng: 13.382623,
     address: "Zinnowitzer Straße 1, 10115, Berlin",
@@ -237,6 +229,25 @@ const COMPANIES_STARTUP = [
     sector: "automotive", size: "startup", founded: 2022,
     description: "Battery-recycling company recovering lithium, nickel, and other raw materials from used EV cells.",
     website: "https://www.cylib.de"
+  },
+  // Moved from new-startups.js on 2026-11-03: first registered 2023-10-24, so it left the
+  // three-year window on 2026-10-24. Register entry and sources kept.
+  {
+    name: "Xavveo", city: "Berlin", state: "berlin",
+    lat: 52.541903, lng: 13.389699,
+    address: "Voltastraße 5, 13355 Berlin",
+    sector: "automotive", size: "startup",
+    description: "Silicon-photonics radar that builds a distributed sensor network around vehicles for autonomous driving.",
+    website: "https://xavveo.com",
+    legalName: "Xavveo GmbH", register: "Amtsgericht Charlottenburg (Berlin) HRB 259214 B", registered: "2023-10-24",
+    status: "active", verified: "2026-10-05",
+    sources: [
+      { type: "register", url: "https://www.northdata.de/Xavveo+GmbH,+Berlin/Amtsgericht+Charlottenburg+(Berlin)+HRB+259214+B",
+        note: "First entry 2023-10-24, Amtsgericht Charlottenburg (Berlin) HRB 259214 B; first seat Dorsten; Berlin since 2023-12-20" },
+      { type: "company", url: "https://xavveo.com/impressum", note: "Imprint names Xavveo GmbH" },
+      { type: "institution", url: "https://invest-in.berlin/news/berlin-startup-xavveo-raises-eur79m-for-advanced-vehicle-radar",
+        note: "€7.9M seed (Berlin Partner, 2024-11-06)" },
+    ],
   },
   // ── AI_ML (added 2026-06) ──────────────────────────────────────────────────
   {

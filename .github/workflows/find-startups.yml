@@ -1,0 +1,54 @@
+# Every two weeks: read the startup press, keep the names inside the map's domains,
+# read each one's imprint, and open or update one pull request that adds them to the
+# leads in new-startups.review.js. A lead is only a name: nothing joins the list of
+# startups until someone has done the five-step check in NEW-STARTUPS.md. Leads deleted
+# in review are remembered in new-startups.seen.json and not proposed again.
+#
+# Needs, once: "Allow GitHub Actions to create and approve pull requests" under
+# Settings → Actions → General → Workflow permissions. The organisation allows it; the
+# box still has to be ticked for this repository. The default token can stay read-only:
+# the permissions below are all this workflow needs.
+name: Find startups
+
+on:
+  schedule:
+    # The 1st and 15th of each month: cron has no "every 14 days". 05:41 UTC, off the hour.
+    - cron: '41 5 1,15 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    # Each company's site gets a few requests with a pause between companies, and a slow
+    # site waits out its timeout. This bound is for a run that has stopped making progress.
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Look for new startups
+        run: node scripts/find-startups.mjs --write --report proposals.md
+
+      # A pull request opened by this workflow does not start the validate workflow, so
+      # the check runs here: proposals that break the dataset never become a pull request.
+      - name: Check the dataset still validates with them
+        run: node scripts/validate.mjs
+
+      - name: Open or update the pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: bot/new-startups
+          delete-branch: true
+          add-paths: |
+            data/companies/new-startups.review.js
+            data/companies/new-startups.seen.json
+          commit-message: 'Add: startup leads proposed by the finder'
+          title: New startups to review
+          body-path: proposals.md
+          labels: startup-leads
